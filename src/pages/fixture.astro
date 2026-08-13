@@ -124,12 +124,12 @@ const courts = [...new Set(matches.map((m) => m.venue).filter(Boolean))].sort((a
                       <span>${esc(m.cat)}</span>
                     </div>
                     <div class="fixture-vs">
-                      <div class="pair">
+                      <div class="pair pair-a">
                         <span class="pair-label">Pareja 1</span>
                         <strong>${esc(m.home)}</strong>
                       </div>
-                      <span>vs</span>
-                      <div class="pair">
+                      <span class="vs">vs</span>
+                      <div class="pair pair-b">
                         <span class="pair-label">Pareja 2</span>
                         <strong>${esc(m.away)}</strong>
                       </div>

@@ -595,13 +595,25 @@ footer strong { color: var(--cream); }
 }
 .fixture-vs {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 12px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: center;
   font-size: 18px;
 }
-.fixture-vs > span { color: var(--lime); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; align-self: center; }
-.pair { display: grid; gap: 4px; }
+.fixture-vs > .vs {
+  display: grid;
+  place-items: center;
+  color: var(--lime);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  justify-self: center;
+}
+.pair { display: grid; gap: 4px; min-width: 0; }
+.pair strong { overflow-wrap: anywhere; }
+.pair-a { justify-items: start; text-align: left; }
+.pair-b { justify-items: end; text-align: right; }
 .pair-label {
   color: var(--muted);
   font-size: 11px;
@@ -630,7 +642,12 @@ footer strong { color: var(--cream); }
 .result-card p { color: var(--muted); font-size: 13px; margin: 0; }
 .result-panel { padding-bottom: 48px; }
 @media (max-width: 700px) {
-  .fixture-vs { grid-template-columns: 1fr; }
+  .fixture-vs {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+  .pair-a, .pair-b { justify-items: center; text-align: center; }
 }
 .admin-qr-img {
   width: 320px;

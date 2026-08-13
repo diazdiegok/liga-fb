@@ -57,29 +57,30 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     </div>
 
     <section id="tab-ranking">
-      <div class="admin-panel">
-        <div class="admin-toolbar">
-          <select id="f-temp"></select>
-          <select id="f-cat"></select>
-          <input id="f-q" type="search" placeholder="Buscar…" />
-        </div>
-        <div class="admin-toolbar">
-          <button class="btn btn-ghost" type="button" id="add">+ Jugador</button>
-          <button class="btn btn-ghost" type="button" id="csv-model">Modelo CSV</button>
-          <button class="btn btn-ghost" type="button" id="csv-export">Exportar CSV</button>
-          <label class="btn btn-ghost" style="cursor:pointer">
-            Importar CSV
-            <input id="csv" type="file" accept=".csv,.txt,.tsv" hidden />
-          </label>
-          <label class="chk"><input id="replace-temp" type="checkbox" checked /> Reemplazar temporada del CSV</label>
-        </div>
-        <div class="admin-toolbar">
-          <button class="btn btn-lime" type="button" id="publish">Publicar ranking</button>
-        </div>
+      <div class="season-bar">
+        <span class="filter-kicker">Temporada</span>
+        <div class="seg" id="f-temps"></div>
       </div>
-      <p class="admin-help">Modelo CSV: name,cat,pts,pj,dif,pos,temp — descargalo, completá en Excel y volvé a importar.</p>
+      <div class="filters">
+        <input class="search" id="f-q" type="search" placeholder="Buscar pareja…" autocomplete="off" />
+        <div class="filter-group" style="flex:1;min-width:220px">
+          <span>Categoría</span>
+          <div class="pills" id="f-cats"></div>
+        </div>
+        <span class="tag" id="rank-count"></span>
+      </div>
+      <div class="admin-actions">
+        <button class="btn btn-ghost" type="button" id="add">+ Jugador</button>
+        <button class="btn btn-ghost" type="button" id="csv-model">Modelo CSV</button>
+        <button class="btn btn-ghost" type="button" id="csv-export">Exportar</button>
+        <label class="btn btn-ghost" style="cursor:pointer">
+          Importar
+          <input id="csv" type="file" accept=".csv,.txt,.tsv" hidden />
+        </label>
+        <label class="chk"><input id="replace-temp" type="checkbox" checked /> Reemplazar temporada</label>
+        <button class="btn btn-lime" type="button" id="publish">Publicar ranking</button>
+      </div>
       <p class="admin-msg" id="rank-msg"></p>
-      <p class="tag" id="rank-count"></p>
       <div class="admin-scroll">
         <table class="admin-table">
           <thead>
@@ -199,6 +200,8 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     let siteData = structuredClone(initialSite);
     let fixture = structuredClone(initialFixture || []);
     let token = sessionStorage.getItem(KEY) || "";
+    let filterTemp = siteData.currentSeason || "T4";
+    let filterCat = "TODAS";
 
     const $ = (id) => document.getElementById(id);
     const gate = $("gate");
@@ -266,35 +269,33 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       return [...new Set(rows.map((r) => r.temp))].sort();
     }
     function catsInView() {
-      const t = $("f-temp").value;
-      const list = t === "TODAS" ? rows : rows.filter((r) => r.temp === t);
+      const list = filterTemp === "TODAS" ? rows : rows.filter((r) => r.temp === filterTemp);
       return [...new Set(list.map((r) => r.cat))].sort();
     }
 
     function fillFilters() {
-      const tempSel = $("f-temp");
-      const catSel = $("f-cat");
-      const prevT = tempSel.value || siteData.currentSeason || "T4";
-      const prevC = catSel.value || "TODAS";
-      tempSel.innerHTML =
-        `<option value="TODAS">Todas las temporadas</option>` +
-        temps().map((t) => `<option value="${t}">${t}</option>`).join("");
-      if ([...tempSel.options].some((o) => o.value === prevT)) tempSel.value = prevT;
-      catSel.innerHTML =
-        `<option value="TODAS">Todas las categorías</option>` +
-        catsInView().map((c) => `<option value="${c}">${c}</option>`).join("");
-      if ([...catSel.options].some((o) => o.value === prevC)) catSel.value = prevC;
+      const tlist = temps();
+      if (filterTemp !== "TODAS" && tlist.length && !tlist.includes(filterTemp)) {
+        filterTemp = tlist.includes(siteData.currentSeason) ? siteData.currentSeason : tlist[0];
+      }
+      const counts = Object.fromEntries(tlist.map((t) => [t, rows.filter((r) => r.temp === t).length]));
+      $("f-temps").innerHTML = tlist
+        .map((t) => `<button class="seg-item${t === filterTemp ? " on" : ""}" type="button" data-temp="${t}"><strong>${t}</strong><span>${counts[t] || 0}</span></button>`)
+        .join("");
+      const catList = catsInView();
+      if (filterCat !== "TODAS" && !catList.includes(filterCat)) filterCat = "TODAS";
+      $("f-cats").innerHTML =
+        `<button class="pill${filterCat === "TODAS" ? " on" : ""}" type="button" data-cat="TODAS">Todas</button>` +
+        catList.map((c) => `<button class="pill${c === filterCat ? " on" : ""}" type="button" data-cat="${c}">${c}</button>`).join("");
     }
 
     function visible() {
-      const t = $("f-temp").value;
-      const c = $("f-cat").value;
       const q = ($("f-q").value || "").trim().toLowerCase();
       return rows
         .map((r, i) => ({ r, i }))
         .filter(({ r }) => {
-          if (t !== "TODAS" && r.temp !== t) return false;
-          if (c !== "TODAS" && r.cat !== c) return false;
+          if (filterTemp !== "TODAS" && r.temp !== filterTemp) return false;
+          if (filterCat !== "TODAS" && r.cat !== filterCat) return false;
           if (q && !(r.name || "").toLowerCase().includes(q)) return false;
           return true;
         });
@@ -302,7 +303,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
 
     function renderTable() {
       const list = visible();
-      $("rank-count").textContent = list.length + " filas visibles · " + rows.length + " en total";
+      $("rank-count").textContent = list.length + " visibles · " + rows.length + " total";
       $("tbody").innerHTML = list
         .map(({ r, i }) => {
           const catOpts = [...new Set([...CATS, r.cat].filter(Boolean))]
@@ -312,14 +313,14 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
             .map((t) => `<option ${t === r.temp ? "selected" : ""}>${t}</option>`)
             .join("");
           return `<tr data-i="${i}">
-            <td class="col-pos"><input data-k="pos" type="number" value="${r.pos}" /></td>
-            <td><input data-k="name" value="${String(r.name).replace(/"/g, "&quot;")}" /></td>
+            <td class="col-pos"><input data-k="pos" type="number" inputmode="numeric" value="${r.pos}" /></td>
+            <td><input class="admin-name" data-k="name" value="${String(r.name).replace(/"/g, "&quot;")}" /></td>
             <td class="col-cat"><select data-k="cat">${catOpts}</select></td>
-            <td class="col-num"><input data-k="pj" type="number" value="${r.pj}" /></td>
-            <td class="col-num"><input data-k="dif" type="number" value="${r.dif}" /></td>
-            <td class="col-num"><input data-k="pts" type="number" value="${r.pts}" /></td>
+            <td class="col-num"><input data-k="pj" type="number" inputmode="numeric" value="${r.pj}" /></td>
+            <td class="col-num"><input data-k="dif" type="number" inputmode="numeric" value="${r.dif}" /></td>
+            <td class="col-num"><input data-k="pts" type="number" inputmode="numeric" value="${r.pts}" /></td>
             <td class="col-temp"><select data-k="temp">${tempOpts}</select></td>
-            <td><button class="btn-danger" type="button" data-del="${i}">X</button></td>
+            <td class="col-del"><button class="admin-del" type="button" data-del="${i}" aria-label="Eliminar">×</button></td>
           </tr>`;
         })
         .join("");
@@ -586,11 +587,20 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       });
     });
 
-    $("f-temp").addEventListener("change", () => {
+    $("f-temps").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-temp]");
+      if (!btn) return;
+      filterTemp = btn.dataset.temp;
       fillFilters();
       renderTable();
     });
-    $("f-cat").addEventListener("change", renderTable);
+    $("f-cats").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-cat]");
+      if (!btn) return;
+      filterCat = btn.dataset.cat;
+      fillFilters();
+      renderTable();
+    });
     $("f-q").addEventListener("input", renderTable);
 
     $("tbody").addEventListener("change", (e) => {
@@ -610,8 +620,8 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     });
 
     $("add").addEventListener("click", () => {
-      const temp = $("f-temp").value === "TODAS" ? siteData.currentSeason || "T4" : $("f-temp").value;
-      const cat = $("f-cat").value === "TODAS" ? "A Masculina" : $("f-cat").value;
+      const temp = filterTemp === "TODAS" ? siteData.currentSeason || "T4" : filterTemp;
+      const cat = filterCat === "TODAS" ? "A Masculina" : filterCat;
       rows.push(cleanRow({ name: "", cat, pts: 0, pj: 0, dif: 0, pos: 1, temp }));
       $("f-q").value = "";
       renderTable();
@@ -652,7 +662,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         temp: idx(["temp", "temporada", "season"]),
       };
       const hasHeader = map.name >= 0;
-      const fallbackTemp = $("f-temp").value === "TODAS" ? siteData.currentSeason || "T4" : $("f-temp").value;
+      const fallbackTemp = filterTemp === "TODAS" ? siteData.currentSeason || "T4" : filterTemp;
       return (hasHeader ? lines.slice(1) : lines)
         .map((line) => {
           const cols = split(line);

@@ -680,39 +680,84 @@ footer strong { color: var(--cream); }
   border: 1px solid var(--line);
   background: var(--bg-2);
 }
-.admin-toolbar {
+.admin-toolbar, .admin-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
+  margin: 0 0 16px;
+}
+.admin-toolbar .btn, .admin-actions .btn { padding: 10px 14px; }
+.admin-toolbar input, .admin-toolbar select, .admin-table input, .admin-table select {
+  background: var(--bg-3);
+  border: 1px solid transparent;
+  color: var(--cream);
+  padding: 10px 12px;
+  font: inherit;
+  border-radius: 10px;
+}
+.admin-table input:focus, .admin-table select:focus {
+  outline: none;
+  border-color: var(--lime);
+}
+.admin-table input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.admin-table input[type="number"]::-webkit-inner-spin-button,
+.admin-table input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
   margin: 0;
 }
-.admin-toolbar .btn { padding: 10px 14px; }
-.admin-toolbar input, .admin-toolbar select, .admin-table input, .admin-table select {
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  color: var(--cream);
-  padding: 8px 10px;
-  font: inherit;
+.admin-table select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%239aa08e' d='M1 1l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
 }
-.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .admin-table th {
   text-align: left;
   color: var(--muted);
   font-size: 11px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 8px 6px;
+  padding: 12px 10px;
   border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
 }
-.admin-table td { padding: 4px 4px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.admin-table td { padding: 8px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.admin-table tr:hover td { background: var(--bg-2); }
 .admin-table input { width: 100%; min-width: 0; }
-.admin-table .col-pos, .admin-table .col-num { width: 72px; }
-.admin-table .col-cat, .admin-table .col-temp { width: 140px; }
-.admin-msg { font-size: 13px; color: var(--muted); }
+.admin-table .admin-name { font-weight: 700; text-align: left; }
+.admin-table .col-pos, .admin-table .col-num { width: 64px; }
+.admin-table .col-cat { width: 160px; }
+.admin-table .col-temp { width: 88px; }
+.admin-table .col-del { width: 44px; text-align: center; }
+.admin-del {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.admin-del:hover { background: rgba(255, 138, 138, 0.12); color: #ff8a8a; }
+.admin-msg { font-size: 13px; color: var(--muted); min-height: 1.2em; }
 .admin-msg.ok { color: var(--lime); }
 .admin-msg.err { color: #ff8a8a; }
-.admin-tabs { display: flex; gap: 8px; margin: 12px 0 20px; }
+.admin-tabs { display: flex; gap: 8px; margin: 12px 0 8px; }
 .btn-danger { background: transparent; border: 1px solid #ff8a8a; color: #ff8a8a; padding: 6px 10px; cursor: pointer; }
 .admin-help { color: var(--muted); font-size: 13px; max-width: 720px; line-height: 1.5; margin: 0; }
 .admin-help a { color: var(--lime); }
@@ -735,7 +780,12 @@ footer strong { color: var(--cream); }
   color: var(--muted);
   font-size: 13px;
 }
-.admin-scroll { overflow: auto; max-height: 62vh; border: 1px solid var(--line); }
+.admin-scroll {
+  overflow: auto;
+  max-height: 62vh;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 
 .splash {

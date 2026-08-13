@@ -9,7 +9,7 @@
   --muted: #9aa394;
   --danger: #ff5a3c;
   --max: 1120px;
-  --nav: 88px;
+  --nav: 76px;
   --font: "Manrope", system-ui, sans-serif;
   --display: "Oswald", "Arial Narrow", sans-serif;
 }
@@ -58,10 +58,10 @@ nav .wrap {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-family: var(--display);
   letter-spacing: 0.08em;
-  font-size: 26px;
+  font-size: 22px;
 }
 .brand-mark {
   width: 36px;
@@ -443,7 +443,7 @@ footer a:hover { color: var(--lime); }
 .nav-links a[aria-current="page"] { color: var(--cream); }
 footer strong { color: var(--cream); }
 
-.brand img { width: 58px; height: 58px; object-fit: contain; }
+.brand img { width: 44px; height: 44px; object-fit: contain; }
 .hero-media {
   position: relative;
   isolation: isolate;

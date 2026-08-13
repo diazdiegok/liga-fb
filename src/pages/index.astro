@@ -4,10 +4,16 @@ import { site } from "../data/site";
 import ranking from "../data/ranking.json";
 import { asset, page } from "../lib/paths";
 
-const t1 = ranking.filter((p) => p.temp === "T1");
-const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
-  .map((cat) => t1.find((p) => p.cat === cat && p.pos === 1))
+const HIDDEN_CATS = new Set(["S Masculina"]);
+const rows = ranking.filter((p) => !HIDDEN_CATS.has(p.cat));
+const current = site.currentSeason || "T4";
+const live = rows.filter((p) => p.temp === current);
+const cats = [...new Set(live.map((p) => p.cat))];
+const leaders = cats
+  .map((cat) => live.filter((p) => p.cat === cat).sort((a, b) => a.pos - b.pos || b.pts - a.pts)[0])
   .filter(Boolean);
+const totalPlayers = rows.length;
+const seasons = [...new Set(rows.map((p) => p.temp))].length;
 ---
 <Layout
   title={`Liga FB | Pádel nocturno y academia en ${site.city}`}
@@ -27,7 +33,7 @@ const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
         </div>
         <aside class="scoreboard">
           <header>
-            <span>Líderes T1</span>
+            <span>Líderes {current}</span>
             <span class="live">En juego</span>
           </header>
           {leaders.map((p) => p && (
@@ -47,8 +53,8 @@ const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
 
   <div class="wrap">
     <div class="stats">
-      <div class="stat"><b>{t1.length}</b><span>Jugadores T1</span></div>
-      <div class="stat"><b>4</b><span>Temporadas</span></div>
+      <div class="stat"><b>{totalPlayers}</b><span>Jugadores</span></div>
+      <div class="stat"><b>{seasons}</b><span>Temporadas</span></div>
       <div class="stat"><b>3</b><span>Sedes oficiales</span></div>
       <div class="stat"><b>1</b><span>Partido por semana</span></div>
     </div>

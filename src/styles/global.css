@@ -373,6 +373,7 @@ footer a:hover { color: var(--lime); }
 .form input:focus, .form select:focus, .form textarea:focus { border-color: var(--lime); }
 .note { color: var(--muted); font-size: 13px; margin-top: 8px; }
 
+.is-admin .wa { display: none; }
 .wa {
   position: fixed;
   right: 20px;
@@ -472,3 +473,51 @@ footer strong { color: var(--cream); }
   .team { grid-template-columns: repeat(2, 1fr); }
   .hero-media::before { background-position: 70% center; }
 }
+
+.admin-gate, .admin-app { padding: 40px 0 80px; }
+.admin-card {
+  max-width: 520px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  padding: 28px;
+  display: grid;
+  gap: 14px;
+}
+.admin-card h1 { font-size: 36px; }
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 18px 0;
+}
+.admin-toolbar input, .admin-toolbar select, .admin-table input, .admin-table select {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--cream);
+  padding: 8px 10px;
+  font: inherit;
+}
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.admin-table th {
+  text-align: left;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+}
+.admin-table td { padding: 4px 4px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.admin-table input { width: 100%; min-width: 0; }
+.admin-table .col-pos, .admin-table .col-num { width: 72px; }
+.admin-table .col-cat, .admin-table .col-temp { width: 140px; }
+.admin-msg { font-size: 13px; color: var(--muted); }
+.admin-msg.ok { color: var(--lime); }
+.admin-msg.err { color: #ff8a8a; }
+.admin-tabs { display: flex; gap: 8px; margin: 12px 0 20px; }
+.btn-danger { background: transparent; border: 1px solid #ff8a8a; color: #ff8a8a; padding: 6px 10px; cursor: pointer; }
+.admin-help { color: var(--muted); font-size: 13px; max-width: 720px; line-height: 1.5; }
+.admin-help a { color: var(--lime); }
+.admin-scroll { overflow: auto; max-height: 62vh; border: 1px solid var(--line); }
+.chk { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }

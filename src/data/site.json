@@ -1,0 +1,59 @@
+{
+  "name": "Liga FB",
+  "city": "Paraná",
+  "province": "Entre Ríos",
+  "instagram": "https://www.instagram.com/ligapadelfb/",
+  "whatsapp": "5493430000000",
+  "year": 2026,
+  "currentSeason": "T4",
+  "githubOwner": "diazdiegok",
+  "githubRepo": "liga-fb",
+  "ligaIntro": "¡Bienvenidos a la Liga FB! Una competencia apasionante que se juega de lunes a viernes en los mejores complejos de la ciudad: Americas Padel, Talleres Padel, Ciclista Padel, Berduc Padel y La Farola Padel. La liga está organizada en tres categorías: A, B y C, tanto para damas como caballeros, donde todos los jugadores compiten entre sí sumando puntos individualmente. Cada jugador participa en un partido semanal.",
+  "venues": [
+    {
+      "id": "palermo",
+      "name": "Palermo Pádel",
+      "address": "Santos Domínguez 100",
+      "city": "Paraná, Entre Ríos",
+      "type": "Cancha abierta · Liga nocturna y clases",
+      "image": "/images/DJI_0239-scaled.jpg",
+      "maps": "Santos+Dominguez+100+Parana"
+    },
+    {
+      "id": "open",
+      "name": "Open",
+      "address": "Augusto Bravard 276",
+      "city": "E3100 Paraná, Entre Ríos",
+      "type": "Cancha abierta · Liga y academia",
+      "image": "/images/Talleres-cancha.jpg",
+      "maps": "Augusto+Bravard+276+Parana"
+    },
+    {
+      "id": "americas",
+      "name": "Américas",
+      "address": "Av. de las Américas 290",
+      "city": "Paraná, Entre Ríos",
+      "type": "Cancha abierta · Liga y academia",
+      "image": "/images/WhatsApp-Image-2026-04-18-at-19.35.51.jpeg",
+      "maps": "Avenida+de+las+Americas+290+Parana"
+    }
+  ],
+  "moreVenues": [
+    { "name": "Complejo Capitán", "image": "/images/capitan-cancha.jpeg" },
+    { "name": "Ciclista", "image": "/images/ciclistac.jpg" },
+    { "name": "La Farola", "image": "/images/farola-c.jpg" },
+    { "name": "Recreativo", "image": "/images/recre-cancha.jpg" },
+    { "name": "Paraná Soccer", "image": "/images/pna-soccer-c.jpg" }
+  ],
+  "team": [
+    { "name": "Fabián Boninni", "image": "/images/FABI-VERDE.png", "role": "Academia" },
+    { "name": "Staff", "image": "/images/team-prof.png", "role": "Profes" },
+    { "name": "Mateo", "image": "/images/mateo.png", "role": "Profe" },
+    { "name": "Tomás Leones", "image": "/images/tomas-leones.png", "role": "Profe" }
+  ],
+  "sponsors": [
+    "/images/MM-LOGO.png",
+    "/images/Logo-redondo-FB-blanco.png",
+    "/images/Screenshot_1-removebg-preview.png"
+  ]
+}

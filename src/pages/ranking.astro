@@ -1,9 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import ranking from "../data/ranking.json";
+import { site } from "../data/site";
 
-const temps = [...new Set(ranking.map((p) => p.temp))];
-const cats = [...new Set(ranking.map((p) => p.cat))].sort();
+const HIDDEN_CATS = new Set(["S Masculina"]);
+const rows = ranking.filter((p) => !HIDDEN_CATS.has(p.cat));
+const temps = [...new Set(rows.map((p) => p.temp))];
+const cats = [...new Set(rows.map((p) => p.cat))].sort();
+const current = site.currentSeason || temps[temps.length - 1];
 ---
 <Layout
   title="Ranking | Liga FB"
@@ -11,7 +15,7 @@ const cats = [...new Set(ranking.map((p) => p.cat))].sort();
 >
   <div class="wrap">
     <header class="page-hero">
-      <p class="kicker">{ranking.length} registros · T1 a T4</p>
+      <p class="kicker">{rows.length} jugadores · todas las temporadas · en juego {current}</p>
       <h1>Ranking</h1>
       <p>Escribí un apellido. Filtrá temporada y categoría. Datos extraídos de la liga publicada.</p>
     </header>
@@ -19,8 +23,8 @@ const cats = [...new Set(ranking.map((p) => p.cat))].sort();
     <div class="filters">
       <input class="search" id="q" type="search" placeholder="Buscar jugador o pareja…" autocomplete="off" />
       <div class="pills" id="temps">
-        {temps.map((t, i) => (
-          <button class:list={["pill", { on: i === temps.length - 1 }]} data-temp={t} type="button">{t}</button>
+        {temps.map((t) => (
+          <button class:list={["pill", { on: t === current }]} data-temp={t} type="button">{t}</button>
         ))}
       </div>
       <div class="pills">
@@ -48,7 +52,7 @@ const cats = [...new Set(ranking.map((p) => p.cat))].sort();
     <p class="empty" id="empty" hidden>No hay jugadores con ese filtro.</p>
   </div>
 
-  <script define:vars={{ players: ranking }}>
+  <script define:vars={{ players: rows }}>
     const q = document.querySelector("#q");
     const tbody = document.querySelector("#rows");
     const empty = document.querySelector("#empty");

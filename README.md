@@ -17,10 +17,17 @@ npm run build
 
 Subí el contenido de `dist/` a `public_html`. Hacé backup de WordPress antes. El `.htaccess` ya redirige las URLs viejas de Elementor.
 
+## Admin
+
+Panel en `/admin/` (también en el pie del sitio). Entrá con un Personal Access Token de GitHub (Contents: Read and write en este repo). Desde ahí se edita el ranking, se importa CSV y se cambian temporada en juego, WhatsApp y textos. Publicar dispara el rebuild de GitHub Pages.
+
+CSV sugerido: `name,cat,pts,pj,dif,pos,temp`
+
 ## Configurar
 
-- WhatsApp: `src/data/site.ts` → `whatsapp` (hoy placeholder `5493430000000`; el sitio original no tenía número público).
-- Ranking: `src/data/ranking.json` (989 filas, T1–T4). Después se puede apuntar a un Google Sheet.
+- WhatsApp: `src/data/site.json` → `whatsapp` (hoy placeholder `5493430000000`; el sitio original no tenía número público).
+- Temporada en juego: `currentSeason` (hoy `T4`).
+- Ranking: `src/data/ranking.json` (T1–T4, sin S Masculina).
 
 ## Extraído del sitio viejo
 

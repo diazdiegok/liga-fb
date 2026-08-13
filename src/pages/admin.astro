@@ -1,0 +1,462 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ranking from "../data/ranking.json";
+import { site } from "../data/site";
+
+const HIDDEN_CATS = new Set(["S Masculina"]);
+const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat));
+---
+<Layout title="Admin | Liga FB" description="Panel para cargar ranking y datos de Liga FB." noindex>
+  <div class="wrap admin-gate" id="gate">
+    <div class="admin-card">
+      <p class="kicker">Panel interno</p>
+      <h1>Admin Liga FB</h1>
+      <p class="admin-help">
+        Entrá con un token de GitHub con permiso de escritura en
+        <a href={`https://github.com/${site.githubOwner}/${site.githubRepo}`} target="_blank" rel="noreferrer">{site.githubOwner}/{site.githubRepo}</a>.
+        El token queda en esta pestaña (sessionStorage), no se guarda en el sitio.
+      </p>
+      <label class="form">
+        Token
+        <input id="token" type="password" autocomplete="off" placeholder="ghp_… o github_pat_…" />
+      </label>
+      <button class="btn btn-lime" type="button" id="login">Entrar</button>
+      <p class="admin-msg" id="login-msg"></p>
+      <p class="admin-help">
+        Creá el token en GitHub → Settings → Developer settings → Personal access tokens.
+        Fine-grained: Contents Read and write en este repo. Classic: scope <code>repo</code>.
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap admin-app" id="app" hidden>
+    <p class="kicker">Panel interno</p>
+    <h1>Cargar y editar</h1>
+    <p class="admin-help">Los cambios se publican en GitHub. En ~1 minuto GitHub Pages actualiza el sitio.</p>
+
+    <div class="admin-tabs">
+      <button class="pill on" type="button" data-tab="ranking">Ranking</button>
+      <button class="pill" type="button" data-tab="sitio">Datos del sitio</button>
+    </div>
+
+    <section id="tab-ranking">
+      <div class="admin-toolbar">
+        <select id="f-temp"></select>
+        <select id="f-cat"></select>
+        <input id="f-q" type="search" placeholder="Buscar…" />
+        <button class="btn btn-ghost" type="button" id="add">+ Jugador</button>
+        <label class="btn btn-ghost" style="cursor:pointer;margin:0">
+          Importar CSV
+          <input id="csv" type="file" accept=".csv,.txt,.tsv" hidden />
+        </label>
+        <label class="chk"><input id="replace-temp" type="checkbox" checked /> Reemplazar la temporada del CSV</label>
+        <button class="btn btn-lime" type="button" id="publish">Publicar ranking</button>
+        <button class="btn btn-ghost" type="button" id="logout">Salir</button>
+      </div>
+      <p class="admin-msg" id="rank-msg"></p>
+      <p class="tag" id="rank-count"></p>
+      <div class="admin-scroll">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th class="col-pos">#</th>
+              <th>Nombre / pareja</th>
+              <th class="col-cat">Categoría</th>
+              <th class="col-num">PJ</th>
+              <th class="col-num">Dif</th>
+              <th class="col-num">Pts</th>
+              <th class="col-temp">Temp</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-sitio" hidden>
+      <form class="form" id="site-form" style="max-width:640px">
+        <label>Temporada en juego
+          <input name="currentSeason" />
+        </label>
+        <label>WhatsApp (549…)
+          <input name="whatsapp" />
+        </label>
+        <label>Instagram
+          <input name="instagram" />
+        </label>
+        <label>Ciudad
+          <input name="city" />
+        </label>
+        <label>Provincia
+          <input name="province" />
+        </label>
+        <label>Texto de la liga
+          <textarea name="ligaIntro" rows="6"></textarea>
+        </label>
+        <button class="btn btn-lime" type="submit">Publicar datos del sitio</button>
+      </form>
+      <p class="admin-msg" id="site-msg"></p>
+    </section>
+  </div>
+
+  <script define:vars={{ initialRows: rows, initialSite: site }}>
+    const KEY = "liga-fb-gh-token";
+    const owner = initialSite.githubOwner;
+    const repo = initialSite.githubRepo;
+    const RANK_PATH = "src/data/ranking.json";
+    const SITE_PATH = "src/data/site.json";
+    const CATS = ["A Masculina", "B Masculina", "C Masculina", "A Femenino", "B Femenino", "C Femenino"];
+
+    let rows = structuredClone(initialRows);
+    let siteData = structuredClone(initialSite);
+    let token = sessionStorage.getItem(KEY) || "";
+
+    const $ = (id) => document.getElementById(id);
+    const gate = $("gate");
+    const app = $("app");
+
+    function toB64(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+    function fromB64(b64) {
+      return decodeURIComponent(escape(atob(b64)));
+    }
+    function headers() {
+      return {
+        Accept: "application/vnd.github+json",
+        Authorization: "Bearer " + token,
+        "X-GitHub-Api-Version": "2022-11-28",
+      };
+    }
+    function msg(el, text, kind) {
+      el.textContent = text;
+      el.className = "admin-msg" + (kind ? " " + kind : "");
+    }
+    function num(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function cleanRow(r) {
+      return {
+        name: String(r.name || "").trim(),
+        cat: String(r.cat || "").trim(),
+        pts: num(r.pts),
+        pj: num(r.pj),
+        dif: num(r.dif),
+        pos: num(r.pos),
+        temp: String(r.temp || siteData.currentSeason || "T4").trim().toUpperCase(),
+      };
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch("https://api.github.com" + path, {
+        ...opts,
+        headers: { ...headers(), ...(opts.headers || {}) },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || "Error GitHub " + res.status);
+      }
+      return data;
+    }
+
+    async function publishFile(filePath, content, message) {
+      const file = await api(`/repos/${owner}/${repo}/contents/${filePath}`);
+      await api(`/repos/${owner}/${repo}/contents/${filePath}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          message,
+          content: toB64(content),
+          sha: file.sha,
+          branch: "main",
+        }),
+      });
+    }
+
+    function temps() {
+      return [...new Set(rows.map((r) => r.temp))].sort();
+    }
+    function catsInView() {
+      const t = $("f-temp").value;
+      const list = t === "TODAS" ? rows : rows.filter((r) => r.temp === t);
+      return [...new Set(list.map((r) => r.cat))].sort();
+    }
+
+    function fillFilters() {
+      const tempSel = $("f-temp");
+      const catSel = $("f-cat");
+      const prevT = tempSel.value || siteData.currentSeason || "T4";
+      const prevC = catSel.value || "TODAS";
+      tempSel.innerHTML =
+        `<option value="TODAS">Todas las temporadas</option>` +
+        temps().map((t) => `<option value="${t}">${t}</option>`).join("");
+      if ([...tempSel.options].some((o) => o.value === prevT)) tempSel.value = prevT;
+      catSel.innerHTML =
+        `<option value="TODAS">Todas las categorías</option>` +
+        catsInView().map((c) => `<option value="${c}">${c}</option>`).join("");
+      if ([...catSel.options].some((o) => o.value === prevC)) catSel.value = prevC;
+    }
+
+    function visible() {
+      const t = $("f-temp").value;
+      const c = $("f-cat").value;
+      const q = ($("f-q").value || "").trim().toLowerCase();
+      return rows
+        .map((r, i) => ({ r, i }))
+        .filter(({ r }) => {
+          if (t !== "TODAS" && r.temp !== t) return false;
+          if (c !== "TODAS" && r.cat !== c) return false;
+          if (q && !(r.name || "").toLowerCase().includes(q)) return false;
+          return true;
+        });
+    }
+
+    function renderTable() {
+      const list = visible();
+      $("rank-count").textContent = list.length + " filas visibles · " + rows.length + " en total";
+      $("tbody").innerHTML = list
+        .map(({ r, i }) => {
+          const catOpts = [...new Set([...CATS, r.cat].filter(Boolean))]
+            .map((c) => `<option ${c === r.cat ? "selected" : ""}>${c}</option>`)
+            .join("");
+          const tempOpts = [...new Set([...(temps().length ? temps() : ["T4"]), r.temp])]
+            .map((t) => `<option ${t === r.temp ? "selected" : ""}>${t}</option>`)
+            .join("");
+          return `<tr data-i="${i}">
+            <td class="col-pos"><input data-k="pos" type="number" value="${r.pos}" /></td>
+            <td><input data-k="name" value="${String(r.name).replace(/"/g, "&quot;")}" /></td>
+            <td class="col-cat"><select data-k="cat">${catOpts}</select></td>
+            <td class="col-num"><input data-k="pj" type="number" value="${r.pj}" /></td>
+            <td class="col-num"><input data-k="dif" type="number" value="${r.dif}" /></td>
+            <td class="col-num"><input data-k="pts" type="number" value="${r.pts}" /></td>
+            <td class="col-temp"><select data-k="temp">${tempOpts}</select></td>
+            <td><button class="btn-danger" type="button" data-del="${i}">X</button></td>
+          </tr>`;
+        })
+        .join("");
+    }
+
+    function fillSiteForm() {
+      const form = $("site-form");
+      form.currentSeason.value = siteData.currentSeason || "T4";
+      form.whatsapp.value = siteData.whatsapp || "";
+      form.instagram.value = siteData.instagram || "";
+      form.city.value = siteData.city || "";
+      form.province.value = siteData.province || "";
+      form.ligaIntro.value = siteData.ligaIntro || "";
+    }
+
+    function showApp() {
+      gate.hidden = true;
+      app.hidden = false;
+      fillFilters();
+      renderTable();
+      fillSiteForm();
+    }
+
+    async function checkToken() {
+      const user = await api("/user");
+      await api(`/repos/${owner}/${repo}`);
+      return user.login;
+    }
+
+    $("login").addEventListener("click", async () => {
+      token = $("token").value.trim();
+      msg($("login-msg"), "Validando…");
+      try {
+        const login = await checkToken();
+        sessionStorage.setItem(KEY, token);
+        msg($("login-msg"), "Hola " + login, "ok");
+        showApp();
+      } catch (e) {
+        token = "";
+        sessionStorage.removeItem(KEY);
+        msg($("login-msg"), e.message, "err");
+      }
+    });
+
+    $("logout").addEventListener("click", () => {
+      sessionStorage.removeItem(KEY);
+      token = "";
+      location.reload();
+    });
+
+    document.querySelectorAll("[data-tab]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-tab]").forEach((b) => b.classList.remove("on"));
+        btn.classList.add("on");
+        $("tab-ranking").hidden = btn.dataset.tab !== "ranking";
+        $("tab-sitio").hidden = btn.dataset.tab !== "sitio";
+      });
+    });
+
+    $("f-temp").addEventListener("change", () => {
+      fillFilters();
+      renderTable();
+    });
+    $("f-cat").addEventListener("change", renderTable);
+    $("f-q").addEventListener("input", renderTable);
+
+    $("tbody").addEventListener("change", (e) => {
+      const tr = e.target.closest("tr");
+      if (!tr) return;
+      const i = Number(tr.dataset.i);
+      const k = e.target.dataset.k;
+      if (!k) return;
+      rows[i][k] = k === "name" || k === "cat" || k === "temp" ? e.target.value : num(e.target.value);
+    });
+    $("tbody").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-del]");
+      if (!btn) return;
+      rows.splice(Number(btn.dataset.del), 1);
+      fillFilters();
+      renderTable();
+    });
+
+    $("add").addEventListener("click", () => {
+      const temp = $("f-temp").value === "TODAS" ? siteData.currentSeason || "T4" : $("f-temp").value;
+      const cat = $("f-cat").value === "TODAS" ? "A Masculina" : $("f-cat").value;
+      rows.push(cleanRow({ name: "", cat, pts: 0, pj: 0, dif: 0, pos: 1, temp }));
+      $("f-q").value = "";
+      renderTable();
+      const last = $("tbody").querySelector("tr:last-child input[data-k=name]");
+      last?.focus();
+    });
+
+    function parseCsv(text) {
+      const raw = text.replace(/^\uFEFF/, "").trim();
+      const first = raw.split(/\r?\n/, 1)[0] || "";
+      const sep = first.includes("\t") ? "\t" : first.includes(";") ? ";" : ",";
+      const lines = raw.split(/\r?\n/).filter((l) => l.trim());
+      const split = (line) => {
+        const out = [];
+        let cur = "";
+        let q = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            q = !q;
+          } else if (ch === sep && !q) {
+            out.push(cur.trim());
+            cur = "";
+          } else cur += ch;
+        }
+        out.push(cur.trim());
+        return out;
+      };
+      const header = split(lines[0]).map((h) => h.toLowerCase());
+      const idx = (names) => names.map((n) => header.indexOf(n)).find((i) => i >= 0) ?? -1;
+      const map = {
+        name: idx(["name", "nombre", "jugador", "pareja", "player"]),
+        cat: idx(["cat", "categoria", "categoría"]),
+        pts: idx(["pts", "puntos", "points"]),
+        pj: idx(["pj", "jugados", "played"]),
+        dif: idx(["dif", "diferencia", "sets"]),
+        pos: idx(["pos", "posicion", "posición", "#"]),
+        temp: idx(["temp", "temporada", "season"]),
+      };
+      const hasHeader = map.name >= 0;
+      const fallbackTemp = $("f-temp").value === "TODAS" ? siteData.currentSeason || "T4" : $("f-temp").value;
+      return (hasHeader ? lines.slice(1) : lines)
+        .map((line) => {
+          const cols = split(line);
+          if (hasHeader) {
+            const get = (k) => (map[k] >= 0 ? cols[map[k]] : "");
+            return cleanRow({
+              name: get("name"),
+              cat: get("cat"),
+              pts: get("pts"),
+              pj: get("pj"),
+              dif: get("dif"),
+              pos: get("pos") || 0,
+              temp: get("temp") || fallbackTemp,
+            });
+          }
+          return cleanRow({
+            pos: cols[0],
+            name: cols[1],
+            cat: cols[2],
+            pj: cols[3],
+            dif: cols[4],
+            pts: cols[5],
+            temp: cols[6] || fallbackTemp,
+          });
+        })
+        .filter((r) => r.name && r.cat.toLowerCase() !== "s masculina");
+    }
+
+    $("csv").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file) return;
+      try {
+        const parsed = parseCsv(await file.text());
+        if (!parsed.length) throw new Error("El CSV no tiene filas válidas.");
+        if ($("replace-temp").checked) {
+          const tempsIn = [...new Set(parsed.map((r) => r.temp))];
+          rows = rows.filter((r) => !tempsIn.includes(r.temp)).concat(parsed);
+          msg($("rank-msg"), `Reemplacé ${tempsIn.join(", ")} · ${parsed.length} filas.`, "ok");
+        } else {
+          rows = rows.concat(parsed);
+          msg($("rank-msg"), `Agregué ${parsed.length} filas.`, "ok");
+        }
+        fillFilters();
+        renderTable();
+      } catch (err) {
+        msg($("rank-msg"), err.message, "err");
+      }
+    });
+
+    $("publish").addEventListener("click", async () => {
+      rows = rows.map(cleanRow).filter((r) => r.name && r.cat.toLowerCase() !== "s masculina");
+      msg($("rank-msg"), "Publicando ranking…");
+      try {
+        await publishFile(
+          RANK_PATH,
+          JSON.stringify(rows, null, 2) + "\n",
+          "Actualiza ranking desde el admin."
+        );
+        msg($("rank-msg"), "Ranking publicado. El sitio se actualiza en ~1 minuto.", "ok");
+        fillFilters();
+        renderTable();
+      } catch (err) {
+        msg($("rank-msg"), err.message, "err");
+      }
+    });
+
+    $("site-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      siteData = {
+        ...siteData,
+        currentSeason: form.currentSeason.value.trim() || "T4",
+        whatsapp: form.whatsapp.value.trim(),
+        instagram: form.instagram.value.trim(),
+        city: form.city.value.trim(),
+        province: form.province.value.trim(),
+        ligaIntro: form.ligaIntro.value.trim(),
+      };
+      msg($("site-msg"), "Publicando datos…");
+      try {
+        await publishFile(
+          SITE_PATH,
+          JSON.stringify(siteData, null, 2) + "\n",
+          "Actualiza datos del sitio desde el admin."
+        );
+        msg($("site-msg"), "Datos publicados. El sitio se actualiza en ~1 minuto.", "ok");
+      } catch (err) {
+        msg($("site-msg"), err.message, "err");
+      }
+    });
+
+    if (token) {
+      checkToken()
+        .then(showApp)
+        .catch(() => {
+          sessionStorage.removeItem(KEY);
+          token = "";
+        });
+    }
+  </script>
+</Layout>

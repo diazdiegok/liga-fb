@@ -102,7 +102,7 @@ export async function saveDisponibilidad({ owner, repo, token, json, sha, messag
     }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "No pude guardar la inscripción.");
+  if (!res.ok) throw new Error(data.message || "No pude guardar la disponibilidad.");
   return data;
 }
 
@@ -110,7 +110,7 @@ export async function appendDisponibilidad({ owner, repo, token, entry }) {
   let lastErr = new Error("No pude guardar.");
   for (let i = 0; i < 5; i++) {
     const file = await loadDisponibilidad({ owner, repo, token });
-    if (!file.json.open) throw new Error("La inscripción de esta fecha ya está cerrada.");
+    if (!file.json.open) throw new Error("La carga de esta fecha ya está cerrada.");
     const next = cleanEntry(entry);
     const err = validateEntry(next);
     if (err) throw new Error(err);
@@ -129,7 +129,7 @@ export async function appendDisponibilidad({ owner, repo, token, entry }) {
         token,
         json: file.json,
         sha: file.sha,
-        message: `Inscribe ${pairLabel(next)} a ${file.json.week}.`,
+        message: `Carga disponibilidad de ${pairLabel(next)} en ${file.json.week}.`,
       });
       return file.json;
     } catch (e) {

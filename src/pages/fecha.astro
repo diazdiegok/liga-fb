@@ -1,0 +1,164 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { site } from "../data/site";
+import disp from "../data/disponibilidad.json";
+import { CATS, DAYS } from "../lib/disponibilidad.js";
+---
+<Layout
+  title={`${disp.week} | Liga FB`}
+  description={`Cargá disponibilidad de tu pareja para ${disp.week} de Liga FB en Paraná.`}
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="kicker">Disponibilidad · {site.currentSeason}</p>
+      <h1>{disp.week}</h1>
+      <p>
+        Anotá los días y horarios en los que su pareja puede jugar. Con eso se arman los partidos
+        de la fecha.
+      </p>
+    </header>
+
+    {disp.open ? (
+      <form class="form form-fecha" id="fecha-form">
+        <div class="form-grid">
+          <label>Primer integrante
+            <input name="p1" required placeholder="Apellido y nombre" autocomplete="name" />
+          </label>
+          <label>Segundo integrante
+            <input name="p2" required placeholder="Apellido y nombre" autocomplete="off" />
+          </label>
+        </div>
+        <label>Categoría de la pareja
+          <select name="cat" required>
+            {CATS.map((c) => <option value={c}>{c}</option>)}
+          </select>
+        </label>
+        <fieldset class="form-set">
+          <legend>¿Necesitan recuperar fecha?</legend>
+          <div class="seg">
+            <label class="seg-item"><input type="radio" name="recover" value="no" checked /> No</label>
+            <label class="seg-item"><input type="radio" name="recover" value="si" /> Sí</label>
+          </div>
+        </fieldset>
+        <fieldset class="form-set">
+          <legend>Días que pueden jugar</legend>
+          <div class="day-list">
+            {DAYS.map((d) => (
+              <label class="day-row">
+                <input type="checkbox" name="day" value={d} />
+                <span>{d}</span>
+                <input type="text" data-hours={d} placeholder="19:00 - 22:00" disabled />
+              </label>
+            ))}
+            <label class="day-row day-bye">
+              <input type="checkbox" name="bye" />
+              <span>No puedo jugar esta semana</span>
+            </label>
+          </div>
+        </fieldset>
+        <label>Información adicional
+          <textarea name="note" rows="3" placeholder="Sede, cancha, o cualquier dato extra…"></textarea>
+        </label>
+        <input class="hp" name="website" tabindex="-1" autocomplete="off" />
+        <button class="btn btn-lime" type="submit" id="fecha-send">Enviar disponibilidad</button>
+        <p class="admin-msg" id="fecha-msg"></p>
+      </form>
+    ) : (
+      <p class="empty" style="display:block;padding:48px 0">
+        La carga de {disp.week} está cerrada. Cuando se abra la próxima fecha va a aparecer acá.
+      </p>
+    )}
+  </div>
+
+  <script>
+    import site from "../data/site.json";
+    import { DAYS, cleanEntry, validateEntry, appendDisponibilidad } from "../lib/disponibilidad.js";
+
+    const token = import.meta.env.PUBLIC_SUBMIT_TOKEN || site.submitToken || "";
+    const form = document.querySelector("#fecha-form");
+    const msg = document.querySelector("#fecha-msg");
+    const bye = form?.querySelector("[name=bye]");
+
+    function setMsg(text, kind) {
+      if (!msg) return;
+      msg.textContent = text;
+      msg.className = "admin-msg" + (kind ? " " + kind : "");
+    }
+
+    function syncDays() {
+      const off = Boolean(bye?.checked);
+      form?.querySelectorAll("[name=day]").forEach((box) => {
+        box.disabled = off;
+        if (off) box.checked = false;
+        const hours = form.querySelector(`[data-hours="${box.value}"]`);
+        if (!hours) return;
+        hours.disabled = off || !box.checked;
+        if (hours.disabled) hours.value = "";
+      });
+    }
+
+    form?.querySelectorAll("[name=day]").forEach((box) => {
+      box.addEventListener("change", syncDays);
+    });
+    bye?.addEventListener("change", syncDays);
+
+    form?.querySelectorAll("input[name=recover]").forEach((radio) => {
+      radio.addEventListener("change", () => {
+        form.querySelectorAll(".seg-item").forEach((el) => el.classList.toggle("on", el.querySelector("input")?.checked));
+      });
+    });
+    form?.querySelectorAll(".seg-item").forEach((el) => {
+      el.classList.toggle("on", el.querySelector("input")?.checked);
+    });
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (form.website.value) return;
+      const days = {};
+      DAYS.forEach((day) => {
+        const on = form.querySelector(`[name=day][value="${day}"]`)?.checked;
+        const hours = form.querySelector(`[data-hours="${day}"]`)?.value || "";
+        if (on) days[day] = hours.trim();
+      });
+      const entry = cleanEntry({
+        p1: form.p1.value,
+        p2: form.p2.value,
+        cat: form.cat.value,
+        recover: form.recover.value === "si",
+        bye: bye?.checked,
+        days,
+        note: form.note.value,
+      });
+      const err = validateEntry(entry);
+      if (err) {
+        setMsg(err, "err");
+        return;
+      }
+      if (!token) {
+        setMsg("Falta configurar el token en Admin → Datos del sitio.", "err");
+        return;
+      }
+      const btn = document.querySelector("#fecha-send");
+      btn.disabled = true;
+      setMsg("Enviando…");
+      try {
+        await appendDisponibilidad({
+          owner: site.githubOwner,
+          repo: site.githubRepo,
+          token,
+          entry,
+        });
+        form.hidden = true;
+        const ok = document.createElement("div");
+        ok.className = "empty";
+        ok.style.display = "block";
+        ok.style.padding = "48px 0";
+        ok.innerHTML = `<strong>Listo.</strong> ${entry.p1} / ${entry.p2} quedó cargada para ${site.currentSeason}. Cuando cerremos la fecha armamos el partido.`;
+        form.insertAdjacentElement("afterend", ok);
+      } catch (ex) {
+        setMsg(ex.message || "No se pudo enviar.", "err");
+        btn.disabled = false;
+      }
+    });
+  </script>
+</Layout>

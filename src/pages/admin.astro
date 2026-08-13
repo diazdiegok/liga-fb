@@ -46,7 +46,7 @@ import Layout from "../layouts/Layout.astro";
     <div class="admin-tabs">
       <button class="pill on" type="button" data-tab="ranking">Ranking</button>
       <button class="pill" type="button" data-tab="fixture">Fixture</button>
-      <button class="pill" type="button" data-tab="fecha">Inscripción</button>
+      <button class="pill" type="button" data-tab="fecha">Fecha</button>
       <button class="pill" type="button" data-tab="sitio">Datos del sitio</button>
     </div>
 
@@ -145,12 +145,12 @@ import Layout from "../layouts/Layout.astro";
           <label class="admin-week">Fecha
             <input id="disp-week" placeholder="Fecha 6" />
           </label>
-          <label class="chk"><input id="disp-open" type="checkbox" checked /> Inscripción abierta</label>
+          <label class="chk"><input id="disp-open" type="checkbox" checked /> Carga abierta</label>
           <button class="btn btn-ghost" type="button" id="disp-reload">Actualizar</button>
           <button class="btn btn-lime" type="button" id="disp-publish">Guardar fecha</button>
         </div>
       </div>
-      <p class="admin-help">Las parejas se anotan en /inscripcion/. Acá ves lo cargado y podés abrir o cerrar la fecha.</p>
+      <p class="admin-help">Las parejas cargan disponibilidad en /fecha/. Acá ves lo anotado y podés abrir o cerrar la fecha.</p>
       <p class="admin-msg" id="disp-msg"></p>
       <p class="tag" id="disp-count"></p>
       <div id="disp-list" class="disp-list"></div>
@@ -176,10 +176,10 @@ import Layout from "../layouts/Layout.astro";
         <label>Texto de la liga
           <textarea name="ligaIntro" rows="6"></textarea>
         </label>
-        <label>Token inscripción pública
+        <label>Token para cargar la fecha
           <input name="submitToken" type="password" autocomplete="off" placeholder="Token Contents: write de este repo" />
         </label>
-        <p class="admin-help">Con este token las parejas pueden anotarse solas. Puede ser el mismo de Publicar. Después de guardarlo, esperá ~1 minuto.</p>
+        <p class="admin-help">Con este token las parejas pueden cargar disponibilidad en /fecha/. Puede ser el mismo de Publicar. Después de guardarlo, esperá ~1 minuto.</p>
         <button class="btn btn-ghost" type="button" id="copy-submit-token">Usar el token de esta sesión</button>
         <button class="btn btn-lime" type="submit">Publicar datos del sitio</button>
       </form>
@@ -424,7 +424,7 @@ import Layout from "../layouts/Layout.astro";
               </div>
             </section>`;
           }).join("")
-        : `<p class="empty" style="display:block;padding:24px 0">Todavía no hay inscriptos en ${disp.week || "esta fecha"}.</p>`;
+        : `<p class="empty" style="display:block;padding:24px 0">Todavía no hay disponibilidades en ${disp.week || "esta fecha"}.</p>`;
     }
     async function reloadDisp() {
       if (!token) {
@@ -435,7 +435,7 @@ import Layout from "../layouts/Layout.astro";
         const file = await loadDisponibilidad({ owner, repo, token });
         disp = file.json;
         fillDisp();
-        msg($("disp-msg"), "Inscripciones actualizadas.", "ok");
+        msg($("disp-msg"), "Disponibilidades actualizadas.", "ok");
       } catch (err) {
         fillDisp();
         msg($("disp-msg"), err.message, "err");
@@ -1031,7 +1031,7 @@ import Layout from "../layouts/Layout.astro";
       disp.week = $("disp-week").value.trim() || "Fecha 6";
       disp.open = $("disp-open").checked;
       disp.temp = siteData.currentSeason || "T4";
-      msg($("disp-msg"), "Guardando inscripción…");
+      msg($("disp-msg"), "Guardando fecha…");
       try {
         const file = await loadDisponibilidad({ owner, repo, token });
         const latest = file.json;
@@ -1046,7 +1046,7 @@ import Layout from "../layouts/Layout.astro";
           token,
           json: latest,
           sha: file.sha,
-          message: latest.open ? `Abre inscripción ${latest.week}.` : `Cierra inscripción ${latest.week}.`,
+          message: latest.open ? `Abre carga de ${latest.week}.` : `Cierra carga de ${latest.week}.`,
         });
         disp = latest;
         fillDisp();

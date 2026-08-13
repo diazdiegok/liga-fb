@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import fixture from "../data/fixture.json";
 import { site } from "../data/site";
 
-const DAY_ORDER = ["lunes", "martes", "miercoles", "miércoles", "jueves", "viernes", "sabado", "sábado", "domingo"];
+const DAY_ORDER = ["lunes", "martes", "miércoles", "miercoles", "jueves", "viernes", "sábado", "sabado", "domingo"];
 const dayIdx = (d: string) => {
   const key = String(d || "").trim().toLowerCase();
   const i = DAY_ORDER.indexOf(key);
@@ -18,47 +18,147 @@ const matches = [...fixture].sort((a, b) => {
   if (da !== db) return da - db;
   return String(a.time || "").localeCompare(String(b.time || ""), "es");
 });
-const weeks = [...new Set(matches.map((m) => m.week || "Sin fecha"))];
+const days = [...new Set(matches.map((m) => m.day).filter(Boolean))].sort((a, b) => dayIdx(a) - dayIdx(b));
+const cats = [...new Set(matches.map((m) => m.cat).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+const courts = [...new Set(matches.map((m) => m.venue).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
 ---
 <Layout
   title="Fixture | Liga FB"
-  description="Partidos semanales de Liga FB en Paraná. Día, horario, complejo, cancha y categoría."
+  description="Partidos semanales de Liga FB en Paraná. Filtrá por día, categoría, cancha y buscá una pareja."
 >
   <div class="wrap">
     <header class="page-hero">
       <p class="kicker">Temporada {site.currentSeason} · lunes a sábado</p>
       <h1>Fixture</h1>
-      <p>Partidos de la semana. Se cargan desde el admin con el Excel de Drive.</p>
+      <p>Filtrá por día, categoría o cancha. Escribí un apellido para encontrar tu pareja.</p>
     </header>
 
     {matches.length === 0 ? (
       <p class="empty" style="display:block;padding:48px 0">Todavía no hay partidos cargados. Cuando se publiquen desde el admin van a aparecer acá.</p>
     ) : (
-      weeks.map((week) => (
-        <section class="fixture-week">
-          <h2>{week}</h2>
-          <div class="fixture-list">
-            {matches.filter((m) => (m.week || "Sin fecha") === week).map((m) => (
-              <article class="fixture-row">
-                <div class="fixture-meta">
-                  <span>{m.day || m.date}</span>
-                  <span>{m.time}</span>
-                  <span>{m.cat}</span>
-                </div>
-                <div class="fixture-vs">
-                  <strong>{m.home}</strong>
-                  <span>vs</span>
-                  <strong>{m.away}</strong>
-                </div>
-                <div class="fixture-place">
-                  <span>{m.venue}{m.court ? ` · ${m.court}` : ""}</span>
-                  {m.result ? <b>{m.result}</b> : <span class="tag">Pendiente</span>}
-                </div>
-              </article>
-            ))}
+      <>
+        <div class="filters fixture-filters">
+          <input class="search" id="q" type="search" placeholder="Buscar pareja o jugador…" autocomplete="off" />
+          <div class="filter-group">
+            <span>Día</span>
+            <div class="pills" id="f-days">
+              <button class="pill on" data-day="Todas" type="button">Todos</button>
+              {days.map((d) => (
+                <button class="pill" data-day={d} type="button">{d}</button>
+              ))}
+            </div>
           </div>
-        </section>
-      ))
+          <div class="filter-group">
+            <span>Categoría</span>
+            <div class="pills" id="f-cats">
+              <button class="pill on" data-cat="Todas" type="button">Todas</button>
+              {cats.map((c) => (
+                <button class="pill" data-cat={c} type="button">{c}</button>
+              ))}
+            </div>
+          </div>
+          <div class="filter-group">
+            <span>Cancha</span>
+            <div class="pills" id="f-courts">
+              <button class="pill on" data-court="Todas" type="button">Todas</button>
+              {courts.map((c) => (
+                <button class="pill" data-court={c} type="button">{c}</button>
+              ))}
+            </div>
+          </div>
+          <span class="tag" id="count"></span>
+        </div>
+        <div id="fixture-root"></div>
+        <p class="empty" id="empty" hidden>No hay partidos con ese filtro.</p>
+      </>
     )}
   </div>
+
+  <script define:vars={{ matches }}>
+    const q = document.querySelector("#q");
+    const root = document.querySelector("#fixture-root");
+    const empty = document.querySelector("#empty");
+    const count = document.querySelector("#count");
+    if (!root) throw new Error("fixture");
+
+    let day = "Todas";
+    let cat = "Todas";
+    let court = "Todas";
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+    function fold(s) {
+      return String(s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function render() {
+      const term = fold((q?.value || "").trim());
+      const rows = matches.filter((m) => {
+        const okDay = day === "Todas" || m.day === day;
+        const okCat = cat === "Todas" || m.cat === cat;
+        const okCourt = court === "Todas" || m.venue === court;
+        const blob = fold([m.home, m.away].filter(Boolean).join(" "));
+        const okQ = !term || blob.includes(term);
+        return okDay && okCat && okCourt && okQ;
+      });
+
+      const weeks = [...new Set(rows.map((m) => m.week || "Sin fecha"))];
+      root.innerHTML = weeks
+        .map((week) => {
+          const list = rows.filter((m) => (m.week || "Sin fecha") === week);
+          return `<section class="fixture-week">
+            <h2>${esc(week)}</h2>
+            <div class="fixture-list">
+              ${list
+                .map(
+                  (m) => `<article class="fixture-row">
+                    <div class="fixture-meta">
+                      <span>${esc(m.day || m.date)}</span>
+                      <span>${esc(m.time)}</span>
+                      <span>${esc(m.cat)}</span>
+                    </div>
+                    <div class="fixture-vs">
+                      <strong>${esc(m.home)}</strong>
+                      <span>vs</span>
+                      <strong>${esc(m.away)}</strong>
+                    </div>
+                    <div class="fixture-place">
+                      <span>${esc(m.venue)}${m.court ? ` · ${esc(m.court)}` : ""}</span>
+                      ${m.result ? `<b>${esc(m.result)}</b>` : `<span class="tag">Pendiente</span>`}
+                    </div>
+                  </article>`
+                )
+                .join("")}
+            </div>
+          </section>`;
+        })
+        .join("");
+
+      empty.hidden = rows.length > 0;
+      count.textContent = rows.length + (rows.length === 1 ? " partido" : " partidos");
+    }
+
+    function bind(selector, key, setter) {
+      document.querySelectorAll(selector).forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(selector).forEach((b) => b.classList.remove("on"));
+          btn.classList.add("on");
+          setter(btn.dataset[key]);
+          render();
+        });
+      });
+    }
+
+    q?.addEventListener("input", render);
+    bind("[data-day]", "day", (v) => { day = v; });
+    bind("[data-cat]", "cat", (v) => { cat = v; });
+    bind("[data-court]", "court", (v) => { court = v; });
+    render();
+  </script>
 </Layout>

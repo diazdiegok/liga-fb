@@ -8,7 +8,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has(p.cat));
 const temps = [...new Set(rows.map((p) => p.temp))];
 const cats = [...new Set(rows.map((p) => p.cat))].sort();
 const current = site.currentSeason || temps[temps.length - 1];
-const currentCount = rows.filter((p) => p.temp === current).length;
+const seasonCounts = Object.fromEntries(temps.map((t) => [t, rows.filter((p) => p.temp === t).length]));
 ---
 <Layout
   title="Ranking | Liga FB"
@@ -16,10 +16,19 @@ const currentCount = rows.filter((p) => p.temp === current).length;
 >
   <div class="wrap">
     <header class="page-hero">
-      <p class="kicker">{rows.length} jugadores en todas las temporadas · {currentCount} en {current}</p>
+      <p class="kicker">{rows.length} jugadores totales · todas las temporadas</p>
       <h1>Ranking</h1>
-      <p>Escribí un apellido. Filtrá categoría y, abajo, la temporada.</p>
+      <p>Escribí un apellido y filtrá por categoría. Elegí la temporada abajo.</p>
     </header>
+
+    <div class="season-bar" id="temps">
+      {temps.map((t) => (
+        <button class:list={["pill", { on: t === current }]} data-temp={t} type="button">
+          {t}
+          <span class="pill-count">{seasonCounts[t]} jugadores</span>
+        </button>
+      ))}
+    </div>
 
     <div class="filters">
       <input class="search" id="q" type="search" placeholder="Buscar jugador o pareja…" autocomplete="off" />
@@ -30,11 +39,6 @@ const currentCount = rows.filter((p) => p.temp === current).length;
         ))}
       </div>
       <span class="tag" id="count"></span>
-    </div>
-    <div class="season-bar" id="temps">
-      {temps.map((t) => (
-        <button class:list={["pill", { on: t === current }]} data-temp={t} type="button">{t}</button>
-      ))}
     </div>
 
     <table class="board">

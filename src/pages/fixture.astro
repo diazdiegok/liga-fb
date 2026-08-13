@@ -1,0 +1,51 @@
+---
+import Layout from "../layouts/Layout.astro";
+import fixture from "../data/fixture.json";
+import { site } from "../data/site";
+
+const matches = [...fixture].sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.time).localeCompare(String(b.time)));
+const weeks = [...new Set(matches.map((m) => m.week || "Sin semana"))];
+---
+<Layout
+  title="Fixture | Liga FB"
+  description="Partidos semanales de Liga FB en Paraná. Fecha, sede, categoría y resultado."
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="kicker">Temporada {site.currentSeason} · lunes a sábado</p>
+      <h1>Fixture</h1>
+      <p>Partidos de la semana. Se cargan desde el admin.</p>
+    </header>
+
+    {matches.length === 0 ? (
+      <p class="empty" style="display:block;padding:48px 0">Todavía no hay partidos cargados. Cuando se publiquen desde el admin van a aparecer acá.</p>
+    ) : (
+      weeks.map((week) => (
+        <section class="fixture-week">
+          <h2>{week}</h2>
+          <div class="fixture-list">
+            {matches.filter((m) => (m.week || "Sin semana") === week).map((m) => (
+              <article class="fixture-row">
+                <div class="fixture-meta">
+                  <span>{m.date}</span>
+                  <span>{m.time}</span>
+                  <span>{m.temp}</span>
+                  <span>{m.cat}</span>
+                </div>
+                <div class="fixture-vs">
+                  <strong>{m.home}</strong>
+                  <span>vs</span>
+                  <strong>{m.away}</strong>
+                </div>
+                <div class="fixture-place">
+                  <span>{m.venue}</span>
+                  {m.result ? <b>{m.result}</b> : <span class="tag">Pendiente</span>}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))
+    )}
+  </div>
+</Layout>

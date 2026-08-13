@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import ranking from "../data/ranking.json";
+import fixtureData from "../data/fixture.json";
 import { site } from "../data/site";
 import auth from "../data/admin-auth.json";
 
@@ -31,9 +32,14 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     <p class="kicker">Panel interno</p>
     <h1>Cargar y editar</h1>
     <p class="admin-help">Los cambios se publican en GitHub. En ~1 minuto GitHub Pages actualiza el sitio.</p>
+    <div class="admin-toolbar">
+      <input id="gh-token" type="password" placeholder="Token GitHub para publicar" autocomplete="off" style="min-width:220px" />
+      <button class="btn btn-ghost" type="button" id="logout">Salir</button>
+    </div>
 
     <div class="admin-tabs">
       <button class="pill on" type="button" data-tab="ranking">Ranking</button>
+      <button class="pill" type="button" data-tab="fixture">Fixture</button>
       <button class="pill" type="button" data-tab="sitio">Datos del sitio</button>
     </div>
 
@@ -43,15 +49,16 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         <select id="f-cat"></select>
         <input id="f-q" type="search" placeholder="Buscar…" />
         <button class="btn btn-ghost" type="button" id="add">+ Jugador</button>
+        <button class="btn btn-ghost" type="button" id="csv-model">Modelo CSV</button>
+        <button class="btn btn-ghost" type="button" id="csv-export">Exportar CSV</button>
         <label class="btn btn-ghost" style="cursor:pointer;margin:0">
           Importar CSV
           <input id="csv" type="file" accept=".csv,.txt,.tsv" hidden />
         </label>
         <label class="chk"><input id="replace-temp" type="checkbox" checked /> Reemplazar la temporada del CSV</label>
-        <input id="gh-token" type="password" placeholder="Token GitHub para publicar" autocomplete="off" style="min-width:220px" />
         <button class="btn btn-lime" type="button" id="publish">Publicar ranking</button>
-        <button class="btn btn-ghost" type="button" id="logout">Salir</button>
       </div>
+      <p class="admin-help">Modelo CSV: name,cat,pts,pj,dif,pos,temp — descargalo, completá en Excel y volvé a importar.</p>
       <p class="admin-msg" id="rank-msg"></p>
       <p class="tag" id="rank-count"></p>
       <div class="admin-scroll">
@@ -69,6 +76,40 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-fixture" hidden>
+      <div class="admin-toolbar">
+        <button class="btn btn-ghost" type="button" id="fx-add">+ Partido</button>
+        <button class="btn btn-ghost" type="button" id="fx-model">Modelo CSV</button>
+        <button class="btn btn-ghost" type="button" id="fx-export">Exportar CSV</button>
+        <label class="btn btn-ghost" style="cursor:pointer;margin:0">
+          Importar CSV
+          <input id="fx-csv" type="file" accept=".csv,.txt,.tsv" hidden />
+        </label>
+        <button class="btn btn-lime" type="button" id="fx-publish">Publicar fixture</button>
+      </div>
+      <p class="admin-help">Columnas del modelo: week,date,temp,cat,time,venue,home,away,result</p>
+      <p class="admin-msg" id="fx-msg"></p>
+      <div class="admin-scroll">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Temp</th>
+              <th>Categoría</th>
+              <th>Sede</th>
+              <th>Local</th>
+              <th>Visitante</th>
+              <th>Resultado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="fx-body"></tbody>
         </table>
       </div>
     </section>
@@ -99,7 +140,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     </section>
   </div>
 
-  <script define:vars={{ initialRows: rows, initialSite: site, auth }}>
+  <script define:vars={{ initialRows: rows, initialSite: site, initialFixture: fixtureData, auth }}>
     const KEY = "liga-fb-gh-token";
     const AUTH_KEY = "liga-fb-admin-ok";
     const PASS_SALT = "liga-fb-admin-v1";
@@ -107,10 +148,14 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     const repo = initialSite.githubRepo;
     const RANK_PATH = "src/data/ranking.json";
     const SITE_PATH = "src/data/site.json";
+    const FIXTURE_PATH = "src/data/fixture.json";
+    const RANK_COLS = ["name", "cat", "pts", "pj", "dif", "pos", "temp"];
+    const FX_COLS = ["week", "date", "temp", "cat", "time", "venue", "home", "away", "result"];
     const CATS = ["A Masculina", "B Masculina", "C Masculina", "A Femenino", "B Femenino", "C Femenino"];
 
     let rows = structuredClone(initialRows);
     let siteData = structuredClone(initialSite);
+    let fixture = structuredClone(initialFixture || []);
     let token = sessionStorage.getItem(KEY) || "";
 
     const $ = (id) => document.getElementById(id);
@@ -248,12 +293,53 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       form.ligaIntro.value = siteData.ligaIntro || "";
     }
 
+    function csvCell(v) {
+      const s = String(v ?? "");
+      return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }
+    function downloadCsv(filename, cols, data) {
+      const body = [cols.join(","), ...data.map((row) => cols.map((c) => csvCell(row[c])).join(","))].join("\n");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob(["\uFEFF" + body + "\n"], { type: "text/csv;charset=utf-8" }));
+      a.download = filename;
+      a.click();
+    }
+    function cleanMatch(m) {
+      return {
+        week: String(m.week || "").trim(),
+        date: String(m.date || "").trim(),
+        temp: String(m.temp || siteData.currentSeason || "T4").trim().toUpperCase(),
+        cat: String(m.cat || "").trim(),
+        time: String(m.time || "").trim(),
+        venue: String(m.venue || "").trim(),
+        home: String(m.home || "").trim(),
+        away: String(m.away || "").trim(),
+        result: String(m.result || "").trim(),
+      };
+    }
+    function renderFixture() {
+      $("fx-body").innerHTML = fixture
+        .map((m, i) => `<tr data-i="${i}">
+          <td><input data-k="week" value="${String(m.week || "").replace(/"/g, "&quot;")}" /></td>
+          <td><input data-k="date" value="${String(m.date || "").replace(/"/g, "&quot;")}" placeholder="2026-08-17" /></td>
+          <td><input data-k="time" value="${String(m.time || "").replace(/"/g, "&quot;")}" placeholder="21:00" /></td>
+          <td><input data-k="temp" value="${String(m.temp || "").replace(/"/g, "&quot;")}" /></td>
+          <td><input data-k="cat" value="${String(m.cat || "").replace(/"/g, "&quot;")}" /></td>
+          <td><input data-k="venue" value="${String(m.venue || "").replace(/"/g, "&quot;")}" /></td>
+          <td><input data-k="home" value="${String(m.home || "").replace(/"/g, "&quot;")}" /></td>
+          <td><input data-k="away" value="${String(m.away || "").replace(/"/g, "&quot;")}" /></td>
+          <td><input data-k="result" value="${String(m.result || "").replace(/"/g, "&quot;")}" /></td>
+          <td><button class="btn-danger" type="button" data-fx-del="${i}">X</button></td>
+        </tr>`)
+        .join("");
+    }
     function showApp() {
       gate.hidden = true;
       app.hidden = false;
       $("gh-token").value = token;
       fillFilters();
       renderTable();
+      renderFixture();
       fillSiteForm();
     }
 
@@ -336,6 +422,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         document.querySelectorAll("[data-tab]").forEach((b) => b.classList.remove("on"));
         btn.classList.add("on");
         $("tab-ranking").hidden = btn.dataset.tab !== "ranking";
+        $("tab-fixture").hidden = btn.dataset.tab !== "fixture";
         $("tab-sitio").hidden = btn.dataset.tab !== "sitio";
       });
     });
@@ -435,6 +522,23 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         .filter((r) => r.name && r.cat.toLowerCase() !== "s masculina");
     }
 
+    $("csv-model").addEventListener("click", () => {
+      downloadCsv("modelo-ranking.csv", RANK_COLS, [{
+        name: "Apellido, Nombre / Apellido, Nombre",
+        cat: "A Masculina",
+        pts: 0,
+        pj: 0,
+        dif: 0,
+        pos: 1,
+        temp: siteData.currentSeason || "T4",
+      }]);
+      msg($("rank-msg"), "Descargué el modelo CSV de ranking. Completalo y usá Importar CSV.", "ok");
+    });
+    $("csv-export").addEventListener("click", () => {
+      downloadCsv("ranking-liga-fb.csv", RANK_COLS, rows.map(cleanRow));
+      msg($("rank-msg"), "Exporté el ranking actual.", "ok");
+    });
+
     $("csv").addEventListener("change", async (e) => {
       const file = e.target.files?.[0];
       e.target.value = "";
@@ -478,6 +582,124 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         renderTable();
       } catch (err) {
         msg($("rank-msg"), err.message, "err");
+      }
+    });
+
+    $("fx-add").addEventListener("click", () => {
+      fixture.push(cleanMatch({
+        week: "Semana 1",
+        date: "",
+        temp: siteData.currentSeason || "T4",
+        cat: "A Masculina",
+        time: "21:00",
+        venue: "Palermo Pádel",
+        home: "",
+        away: "",
+        result: "",
+      }));
+      renderFixture();
+    });
+    $("fx-body").addEventListener("change", (e) => {
+      const tr = e.target.closest("tr");
+      if (!tr) return;
+      const i = Number(tr.dataset.i);
+      const k = e.target.dataset.k;
+      if (!k) return;
+      fixture[i][k] = e.target.value;
+    });
+    $("fx-body").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-fx-del]");
+      if (!btn) return;
+      fixture.splice(Number(btn.dataset.fxDel), 1);
+      renderFixture();
+    });
+    $("fx-model").addEventListener("click", () => {
+      downloadCsv("modelo-fixture.csv", FX_COLS, [{
+        week: "Semana 1",
+        date: "2026-08-17",
+        temp: siteData.currentSeason || "T4",
+        cat: "A Masculina",
+        time: "21:00",
+        venue: "Palermo Pádel",
+        home: "Apellido / Apellido",
+        away: "Apellido / Apellido",
+        result: "",
+      }]);
+      msg($("fx-msg"), "Descargué el modelo CSV de fixture. Completalo y usá Importar CSV.", "ok");
+    });
+    $("fx-export").addEventListener("click", () => {
+      downloadCsv("fixture-liga-fb.csv", FX_COLS, fixture.map(cleanMatch));
+      msg($("fx-msg"), "Exporté el fixture actual.", "ok");
+    });
+    $("fx-csv").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file) return;
+      try {
+        const text = (await file.text()).replace(/^\uFEFF/, "").trim();
+        const first = text.split(/\r?\n/, 1)[0] || "";
+        const sep = first.includes("\t") ? "\t" : first.includes(";") ? ";" : ",";
+        const lines = text.split(/\r?\n/).filter((l) => l.trim());
+        const split = (line) => {
+          const out = [];
+          let cur = "";
+          let q = false;
+          for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') q = !q;
+            else if (ch === sep && !q) {
+              out.push(cur.trim());
+              cur = "";
+            } else cur += ch;
+          }
+          out.push(cur.trim());
+          return out;
+        };
+        const header = split(lines[0]).map((h) => h.toLowerCase());
+        const idx = (name) => header.indexOf(name);
+        const parsed = lines.slice(1).map((line) => {
+          const cols = split(line);
+          const get = (k) => (idx(k) >= 0 ? cols[idx(k)] : "");
+          return cleanMatch({
+            week: get("week") || get("semana"),
+            date: get("date") || get("fecha"),
+            temp: get("temp") || get("temporada"),
+            cat: get("cat") || get("categoria") || get("categoría"),
+            time: get("time") || get("hora"),
+            venue: get("venue") || get("sede"),
+            home: get("home") || get("local"),
+            away: get("away") || get("visitante"),
+            result: get("result") || get("resultado"),
+          });
+        }).filter((m) => m.home || m.away);
+        if (!parsed.length) throw new Error("El CSV no tiene partidos válidos.");
+        fixture = parsed;
+        renderFixture();
+        msg($("fx-msg"), `Importé ${parsed.length} partidos.`, "ok");
+      } catch (err) {
+        msg($("fx-msg"), err.message, "err");
+      }
+    });
+    $("fx-publish").addEventListener("click", async () => {
+      token = $("gh-token").value.trim();
+      if (!token) {
+        msg($("fx-msg"), "Para publicar pegá un token de GitHub arriba (Contents: write).", "err");
+        $("gh-token").focus();
+        return;
+      }
+      sessionStorage.setItem(KEY, token);
+      fixture = fixture.map(cleanMatch).filter((m) => m.home || m.away);
+      msg($("fx-msg"), "Publicando fixture…");
+      try {
+        await publishFile(
+          FIXTURE_PATH,
+          JSON.stringify(fixture, null, 2) + "\n",
+          "Actualiza fixture desde el admin."
+        );
+        msg($("fx-msg"), "Fixture publicado. El sitio se actualiza en ~1 minuto.", "ok");
+        renderFixture();
+      } catch (err) {
+        msg($("fx-msg"), err.message, "err");
       }
     });
 

@@ -39,6 +39,7 @@ const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
         <ul class="nav-links">
           <li><a href={page("")} aria-current={path.endsWith("/liga-fb/") || path.endsWith("/liga-fb") ? "page" : undefined}>Inicio</a></li>
           <li><a href={page("ranking/")} aria-current={path.includes("/ranking") ? "page" : undefined}>Ranking</a></li>
+          <li><a href={page("fixture/")} aria-current={path.includes("/fixture") ? "page" : undefined}>Fixture</a></li>
           <li><a href={page("academia/")} aria-current={path.includes("/academia") ? "page" : undefined}>Academia</a></li>
           <li><a href={page("sedes/")} aria-current={path.includes("/sedes") ? "page" : undefined}>Sedes</a></li>
         </ul>
@@ -54,7 +55,7 @@ const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
       <div class="wrap">
         <div>
           <strong>LIGA FB ® {site.year}</strong>
-          <p>Pádel nocturno y academia · {site.city}, {site.province}</p>
+          <p>Liga y academia de pádel · {site.city}, {site.province}</p>
         </div>
         <div>
           <a href={site.instagram} target="_blank" rel="noreferrer">Instagram</a>

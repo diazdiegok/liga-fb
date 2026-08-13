@@ -13,19 +13,16 @@ const leaders = cats
   .map((cat) => live.filter((p) => p.cat === cat).sort((a, b) => a.pos - b.pos || b.pts - a.pts)[0])
   .filter(Boolean);
 const totalPlayers = rows.length;
-const temps = [...new Set(rows.map((p) => p.temp))];
-const seasonCounts = Object.fromEntries(temps.map((t) => [t, rows.filter((p) => p.temp === t).length]));
-const currentCount = seasonCounts[current] || live.length;
 ---
 <Layout
-  title={`Liga FB | Pádel nocturno y academia en ${site.city}`}
-  description="Liga nocturna de pádel y academia de Fabián Boninni en Paraná. Ranking, clases de adultos y niños, tres sedes."
+  title={`Liga FB | Liga y academia de pádel en ${site.city}`}
+  description="Liga y academia de pádel de Fabián Boninni en Paraná. Ranking, fixture, clases de adultos y niños, tres sedes."
 >
   <div class="hero-media" style={`--hero-img: url('${asset("images/DJI_0239-scaled.jpg")}')`}>
     <div class="wrap">
       <header class="hero">
         <div>
-          <p class="kicker">{site.city} · Lunes a viernes · Liga + Academia</p>
+          <p class="kicker">{site.city} · Lunes a sábado · Liga + Academia</p>
           <h1>Sin esfuerzo<br />no hay gloria</h1>
           <p class="lead">{site.ligaIntro}</p>
           <div class="actions">
@@ -55,29 +52,11 @@ const currentCount = seasonCounts[current] || live.length;
 
   <div class="wrap">
     <div class="stats">
-      <div class="stat"><b>{totalPlayers}</b><span>Jugadores totales</span></div>
-      <div class="stat"><b id="season-count">{currentCount}</b><span id="season-label">Jugadores {current}</span></div>
+      <div class="stat"><b>{totalPlayers}</b><span>Jugadores totales · todas las temporadas</span></div>
       <div class="stat"><b>3</b><span>Sedes oficiales</span></div>
       <div class="stat"><b>1</b><span>Partido por semana</span></div>
     </div>
-    <div class="season-bar" id="season-bar">
-      {temps.map((t) => (
-        <button class:list={["pill", { on: t === current }]} type="button" data-season={t} data-count={seasonCounts[t]}>{t}</button>
-      ))}
-    </div>
   </div>
-  <script>
-    document.querySelectorAll("#season-bar [data-season]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("#season-bar [data-season]").forEach((b) => b.classList.remove("on"));
-        btn.classList.add("on");
-        const count = document.getElementById("season-count");
-        const label = document.getElementById("season-label");
-        if (count) count.textContent = btn.getAttribute("data-count") || "";
-        if (label) label.textContent = "Jugadores " + (btn.getAttribute("data-season") || "");
-      });
-    });
-  </script>
 
   <section>
     <div class="wrap">
@@ -86,7 +65,7 @@ const currentCount = seasonCounts[current] || live.length;
           <p class="kicker">La liga</p>
           <h2>Cómo se juega</h2>
         </div>
-        <p>Categorías A, B y C. Damas y caballeros. Puntos individuales. Un partido por semana, lunes a viernes.</p>
+        <p>Categorías A, B y C. Damas y caballeros. Puntos individuales. Un partido por semana, lunes a sábado.</p>
       </div>
       <div class="steps">
         <article class="step">
@@ -112,7 +91,7 @@ const currentCount = seasonCounts[current] || live.length;
     <div class="split-block">
       <p class="kicker">Liga FB</p>
       <h2>Competí</h2>
-      <p class="lead">Liga nocturna con más de 250 jugadores. Ranking público de T1 a T4.</p>
+      <p class="lead">Liga y academia de pádel. Ranking público de T1 a T4.</p>
       <ul>
         <li>Categorías A / B / C — damas y caballeros</li>
         <li>Sedes en {site.city}</li>

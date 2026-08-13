@@ -190,7 +190,7 @@ h3 { font-size: 22px; }
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   border-bottom: 1px solid var(--line);
 }
 .stat {
@@ -491,6 +491,43 @@ footer strong { color: var(--cream); }
   padding: 16px 0 28px;
   border-bottom: 1px solid var(--line);
 }
+.pill-count {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.75;
+}
+.fixture-week { padding: 28px 0 8px; }
+.fixture-week h2 { font-size: 28px; margin-bottom: 16px; }
+.fixture-list { display: grid; gap: 10px; padding-bottom: 40px; }
+.fixture-row {
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  padding: 16px 18px;
+  display: grid;
+  gap: 8px;
+}
+.fixture-meta, .fixture-place {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.fixture-vs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 18px;
+}
+.fixture-vs span { color: var(--lime); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+.fixture-place b { color: var(--cream); }
 .admin-qr-img {
   width: 320px;
   max-width: 100%;

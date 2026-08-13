@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { site } from "../data/site";
+import { asset, page } from "../lib/paths";
 
 interface Props {
   title: string;
@@ -9,6 +10,7 @@ interface Props {
 const { title, description } = Astro.props;
 const path = Astro.url.pathname;
 const wa = `https://wa.me/${site.whatsapp}`;
+const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
 ---
 <!DOCTYPE html>
 <html lang="es">
@@ -20,7 +22,7 @@ const wa = `https://wa.me/${site.whatsapp}`;
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="icon" href="/images/Logo-FB-blanco-sin-fondo-02.png" />
+    <link rel="icon" href={logo} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet" />
@@ -28,17 +30,17 @@ const wa = `https://wa.me/${site.whatsapp}`;
   <body class="court">
     <nav>
       <div class="wrap">
-        <a class="brand" href="/">
-          <img src="/images/Logo-FB-blanco-sin-fondo-02.png" alt="Liga FB" />
+        <a class="brand" href={page("")}>
+          <img src={logo} alt="Liga FB" />
           LIGA FB
         </a>
         <ul class="nav-links">
-          <li><a href="/" aria-current={path === "/" ? "page" : undefined}>Inicio</a></li>
-          <li><a href="/ranking/" aria-current={path.startsWith("/ranking") ? "page" : undefined}>Ranking</a></li>
-          <li><a href="/academia/" aria-current={path.startsWith("/academia") ? "page" : undefined}>Academia</a></li>
-          <li><a href="/sedes/" aria-current={path.startsWith("/sedes") ? "page" : undefined}>Sedes</a></li>
+          <li><a href={page("")} aria-current={path.endsWith("/liga-fb/") || path.endsWith("/liga-fb") ? "page" : undefined}>Inicio</a></li>
+          <li><a href={page("ranking/")} aria-current={path.includes("/ranking") ? "page" : undefined}>Ranking</a></li>
+          <li><a href={page("academia/")} aria-current={path.includes("/academia") ? "page" : undefined}>Academia</a></li>
+          <li><a href={page("sedes/")} aria-current={path.includes("/sedes") ? "page" : undefined}>Sedes</a></li>
         </ul>
-        <a class="nav-cta" href="/inscripcion/">Sumate</a>
+        <a class="nav-cta" href={page("inscripcion/")}>Sumate</a>
         <button class="menu-btn" type="button" data-menu>Menu</button>
       </div>
     </nav>
@@ -52,7 +54,7 @@ const wa = `https://wa.me/${site.whatsapp}`;
         <div>
           <a href={site.instagram} target="_blank" rel="noreferrer">Instagram</a>
           ·
-          <a href="/inscripcion/">WhatsApp</a>
+          <a href={page("inscripcion/")}>WhatsApp</a>
         </div>
       </div>
     </footer>

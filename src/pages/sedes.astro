@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { site } from "../data/site";
+import { asset } from "../lib/paths";
 ---
 <Layout
   title="Sedes | Liga FB Paraná"
@@ -17,7 +18,7 @@ import { site } from "../data/site";
       <section id={v.id} style="padding:16px 0 28px">
         <article class="venue sede-grid">
           <div class="venue-photo">
-            <img class="photo" src={v.image} alt={v.name} />
+            <img class="photo" src={asset(v.image)} alt={v.name} />
             <span>{v.name}</span>
           </div>
           <div class="venue-body">
@@ -42,7 +43,7 @@ import { site } from "../data/site";
       <div class="venues">
         {site.moreVenues.map((v) => (
           <article class="venue">
-            <div class="venue-photo"><img class="photo" src={v.image} alt={v.name} /></div>
+            <div class="venue-photo"><img class="photo" src={asset(v.image)} alt={v.name} /></div>
             <div class="venue-body"><h3>{v.name}</h3></div>
           </article>
         ))}

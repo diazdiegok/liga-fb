@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { site } from "../data/site";
+import { asset, page } from "../lib/paths";
 ---
 <Layout
   title="Academia FB | Clases de pádel en Paraná"
@@ -12,15 +13,15 @@ import { site } from "../data/site";
       <h1>Entrená<br />como se juega</h1>
       <p>Clases de adultos y niños, lunes a viernes, de 10 a 17. Técnica, partido y competencia. La liga es el examen; la academia, el entrenamiento.</p>
       <div class="actions">
-        <a class="btn btn-lime" href="/inscripcion/">Quiero clases</a>
-        <a class="btn btn-ghost" href="/sedes/">Ver sedes</a>
+        <a class="btn btn-lime" href={page("inscripcion/")}>Quiero clases</a>
+        <a class="btn btn-ghost" href={page("sedes/")}>Ver sedes</a>
       </div>
     </header>
   </div>
 
   <section>
     <div class="wrap sede-grid" style="gap:32px;align-items:center">
-      <img class="portrait" src="/images/FABI-VERDE.png" alt="Fabián Boninni" />
+      <img class="portrait" src={asset("images/FABI-VERDE.png")} alt="Fabián Boninni" />
       <div>
         <p class="kicker">Director</p>
         <h2>Fabián Boninni</h2>
@@ -68,7 +69,7 @@ import { site } from "../data/site";
       <div class="team">
         {site.team.map((p) => (
           <figure>
-            <img src={p.image} alt={p.name} />
+            <img src={asset(p.image)} alt={p.name} />
             <figcaption>{p.name} · {p.role}</figcaption>
           </figure>
         ))}
@@ -80,15 +81,15 @@ import { site } from "../data/site";
     <div class="wrap">
       <div class="venues">
         <article class="venue">
-          <div class="venue-photo"><img class="photo" src="/images/gym-1.jpg" alt="Gym" /><span>Gym</span></div>
+          <div class="venue-photo"><img class="photo" src={asset("images/gym-1.jpg")} alt="Gym" /><span>Gym</span></div>
           <div class="venue-body"><h3>Gimnasio</h3><p>Complemento físico para la liga.</p></div>
         </article>
         <article class="venue">
-          <div class="venue-photo"><img class="photo" src="/images/nutri-1.jpg" alt="Nutrición" /><span>Nutri</span></div>
+          <div class="venue-photo"><img class="photo" src={asset("images/nutri-1.jpg")} alt="Nutrición" /><span>Nutri</span></div>
           <div class="venue-body"><h3>Nutricionista</h3><p>Acompañamiento para rendir en cancha.</p></div>
         </article>
         <article class="venue">
-          <div class="venue-photo"><img class="photo" src="/images/DSC0348-scaled.jpg" alt="Clase de pádel" /><span>Cancha</span></div>
+          <div class="venue-photo"><img class="photo" src={asset("images/DSC0348-scaled.jpg")} alt="Clase de pádel" /><span>Cancha</span></div>
           <div class="venue-body"><h3>En cancha</h3><p>Foto real de la academia en Complejo Capitán.</p></div>
         </article>
       </div>

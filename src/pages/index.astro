@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { site } from "../data/site";
 import ranking from "../data/ranking.json";
+import { asset, page } from "../lib/paths";
 
 const t1 = ranking.filter((p) => p.temp === "T1");
 const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
@@ -12,7 +13,7 @@ const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
   title={`Liga FB | Pádel nocturno y academia en ${site.city}`}
   description="Liga nocturna de pádel y academia de Fabián Boninni en Paraná. Ranking, clases de adultos y niños, tres sedes."
 >
-  <div class="hero-media">
+  <div class="hero-media" style={`--hero-img: url('${asset("images/DJI_0239-scaled.jpg")}')`}>
     <div class="wrap">
       <header class="hero">
         <div>
@@ -20,8 +21,8 @@ const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
           <h1>Sin esfuerzo<br />no hay gloria</h1>
           <p class="lead">{site.ligaIntro}</p>
           <div class="actions">
-            <a class="btn btn-lime" href="/inscripcion/">Sumate a la liga</a>
-            <a class="btn btn-ghost" href="/ranking/">Ver ranking</a>
+            <a class="btn btn-lime" href={page("inscripcion/")}>Sumate a la liga</a>
+            <a class="btn btn-ghost" href={page("ranking/")}>Ver ranking</a>
           </div>
         </div>
         <aside class="scoreboard">
@@ -93,7 +94,7 @@ const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
         <li>Ranking con buscador</li>
       </ul>
       <div class="actions">
-        <a class="btn btn-lime" href="/inscripcion/">Inscribirme a la liga</a>
+        <a class="btn btn-lime" href={page("inscripcion/")}>Inscribirme a la liga</a>
       </div>
     </div>
     <div class="split-block">
@@ -106,7 +107,7 @@ const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
         <li>Nutricionista y gym</li>
       </ul>
       <div class="actions">
-        <a class="btn btn-ghost" href="/academia/">Ver academia</a>
+        <a class="btn btn-ghost" href={page("academia/")}>Ver academia</a>
       </div>
     </div>
   </div>
@@ -118,19 +119,19 @@ const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
           <p class="kicker">Dónde</p>
           <h2>Sedes oficiales</h2>
         </div>
-        <a class="btn btn-ghost" href="/sedes/">Todas las sedes</a>
+        <a class="btn btn-ghost" href={page("sedes/")}>Todas las sedes</a>
       </div>
       <div class="venues">
         {site.venues.map((v) => (
           <article class="venue">
             <div class="venue-photo">
-              <img class="photo" src={v.image} alt={v.name} />
+              <img class="photo" src={asset(v.image)} alt={v.name} />
               <span>Abierta</span>
             </div>
             <div class="venue-body">
               <h3>{v.name}</h3>
               <p>{v.address}</p>
-              <a href={`/sedes/#${v.id}`}>Cómo llegar</a>
+              <a href={`${page("sedes/")}#${v.id}`}>Cómo llegar</a>
             </div>
           </article>
         ))}

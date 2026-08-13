@@ -94,6 +94,7 @@ import { CATS, DAYS } from "../lib/disponibilidad.js";
         if (!hours) return;
         hours.disabled = off || !box.checked;
         if (hours.disabled) hours.value = "";
+        else if (!hours.value.trim()) hours.value = "19:00 - 22:00";
       });
     }
 

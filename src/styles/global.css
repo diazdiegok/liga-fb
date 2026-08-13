@@ -491,14 +491,15 @@ footer strong { color: var(--cream); }
   padding: 16px 0 28px;
   border-bottom: 1px solid var(--line);
 }
-.admin-qr {
-  width: 220px;
-  height: 220px;
+.admin-qr-img {
+  width: 320px;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1;
   background: #fff;
-  padding: 10px;
-  border: 1px solid var(--line);
+  padding: 16px;
+  display: block;
 }
-.admin-qr svg { display: block; width: 100%; height: 100%; }
 .admin-otp {
   letter-spacing: 0.35em;
   font-size: 20px;

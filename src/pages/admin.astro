@@ -1,17 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import QRCode from "qrcode";
 import ranking from "../data/ranking.json";
 import { site } from "../data/site";
 import auth from "../data/admin-auth.json";
-
-const otpauth = `otpauth://totp/${encodeURIComponent(auth.issuer)}:${encodeURIComponent(auth.user)}?secret=${auth.totpSecret}&issuer=${encodeURIComponent(auth.issuer)}&algorithm=SHA1&digits=6&period=30`;
-const qrSvg = await QRCode.toString(otpauth, {
-  type: "svg",
-  margin: 1,
-  width: 220,
-  color: { dark: "#111111", light: "#ffffff" },
-});
 
 const HIDDEN_CATS = new Set(["S Masculina"]);
 const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat));
@@ -21,9 +12,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     <form class="admin-card form" id="login-form">
       <p class="kicker">Panel interno</p>
       <h1>Admin Liga FB</h1>
-      <p class="admin-help">Escaneá el QR con Google Authenticator, Authy o el autenticador de Windows. Después entrá con usuario, clave y el código de 6 dígitos.</p>
-      <div class="admin-qr" set:html={qrSvg} />
-      <p class="admin-help">Cuenta: {auth.issuer} · {auth.user}</p>
+      <p class="admin-help">Usuario, clave y el código de 6 dígitos del autenticador.</p>
       <label>Usuario
         <input id="user" autocomplete="username" placeholder="Admin" />
       </label>

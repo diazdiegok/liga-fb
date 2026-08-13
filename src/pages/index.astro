@@ -13,7 +13,9 @@ const leaders = cats
   .map((cat) => live.filter((p) => p.cat === cat).sort((a, b) => a.pos - b.pos || b.pts - a.pts)[0])
   .filter(Boolean);
 const totalPlayers = rows.length;
-const seasons = [...new Set(rows.map((p) => p.temp))].length;
+const temps = [...new Set(rows.map((p) => p.temp))];
+const seasonCounts = Object.fromEntries(temps.map((t) => [t, rows.filter((p) => p.temp === t).length]));
+const currentCount = seasonCounts[current] || live.length;
 ---
 <Layout
   title={`Liga FB | Pádel nocturno y academia en ${site.city}`}
@@ -53,12 +55,29 @@ const seasons = [...new Set(rows.map((p) => p.temp))].length;
 
   <div class="wrap">
     <div class="stats">
-      <div class="stat"><b>{totalPlayers}</b><span>Jugadores</span></div>
-      <div class="stat"><b>{seasons}</b><span>Temporadas</span></div>
+      <div class="stat"><b>{totalPlayers}</b><span>Jugadores totales</span></div>
+      <div class="stat"><b id="season-count">{currentCount}</b><span id="season-label">Jugadores {current}</span></div>
       <div class="stat"><b>3</b><span>Sedes oficiales</span></div>
       <div class="stat"><b>1</b><span>Partido por semana</span></div>
     </div>
+    <div class="season-bar" id="season-bar">
+      {temps.map((t) => (
+        <button class:list={["pill", { on: t === current }]} type="button" data-season={t} data-count={seasonCounts[t]}>{t}</button>
+      ))}
+    </div>
   </div>
+  <script>
+    document.querySelectorAll("#season-bar [data-season]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#season-bar [data-season]").forEach((b) => b.classList.remove("on"));
+        btn.classList.add("on");
+        const count = document.getElementById("season-count");
+        const label = document.getElementById("season-label");
+        if (count) count.textContent = btn.getAttribute("data-count") || "";
+        if (label) label.textContent = "Jugadores " + (btn.getAttribute("data-season") || "");
+      });
+    });
+  </script>
 
   <section>
     <div class="wrap">

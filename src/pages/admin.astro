@@ -1,12 +1,5 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import ranking from "../data/ranking.json";
-import fixtureData from "../data/fixture.json";
-import { site } from "../data/site";
-import auth from "../data/admin-auth.json";
-
-const HIDDEN_CATS = new Set(["S Masculina"]);
-const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat));
 ---
 <Layout title="Admin | Liga FB" description="Panel para cargar ranking y datos de Liga FB." noindex>
   <div class="wrap admin-gate" id="gate">
@@ -122,7 +115,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
           <button class="btn btn-lime" type="button" id="fx-publish">Publicar fixture</button>
         </div>
       </div>
-      <p class="admin-help">Acepta el Excel/Drive actual: categoria, partido, complejo, cancha, dia, horario. El partido va como “Apellido - Apellido vs Apellido - Apellido”.</p>
+      <p class="admin-help">Resultado desde Pareja 1: <b>6-4 6-2</b> (2-0 = 3 pts) o <b>6-4 3-6 6-2</b> (2-1 = 2 pts y 1 la otra). Al publicar, se ven en Resultados y se suman al ranking.</p>
       <p class="admin-msg" id="fx-msg"></p>
       <div class="admin-scroll">
         <table class="admin-table">
@@ -136,7 +129,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
               <th>Cancha</th>
               <th>Pareja 1</th>
               <th>Pareja 2</th>
-              <th>Resultado</th>
+              <th class="col-result">Resultado</th>
               <th></th>
             </tr>
           </thead>
@@ -171,7 +164,17 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     </section>
   </div>
 
-  <script define:vars={{ initialRows: rows, initialSite: site, initialFixture: fixtureData, auth }}>
+  <script>
+    import rankingJson from "../data/ranking.json";
+    import fixtureJson from "../data/fixture.json";
+    import siteJson from "../data/site.json";
+    import auth from "../data/admin-auth.json";
+    import { applyFixtureResults, describeResult } from "../lib/scoring.js";
+
+    const HIDDEN_CATS = new Set(["S Masculina"]);
+    const initialRows = rankingJson.filter((p) => !HIDDEN_CATS.has(p.cat));
+    const initialSite = siteJson;
+    const initialFixture = fixtureJson;
     const KEY = "liga-fb-gh-token";
     const AUTH_KEY = "liga-fb-admin-ok";
     const PASS_SALT = "liga-fb-admin-v1";
@@ -217,6 +220,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       return {
         Accept: "application/vnd.github+json",
         Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
         "X-GitHub-Api-Version": "2022-11-28",
       };
     }
@@ -262,6 +266,35 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
           sha: file.sha,
           branch: "main",
         }),
+      });
+    }
+    async function publishFiles(files, message) {
+      const ref = await api(`/repos/${owner}/${repo}/git/refs/heads/main`);
+      const baseSha = ref.object.sha;
+      const baseCommit = await api(`/repos/${owner}/${repo}/git/commits/${baseSha}`);
+      const tree = await api(`/repos/${owner}/${repo}/git/trees`, {
+        method: "POST",
+        body: JSON.stringify({
+          base_tree: baseCommit.tree.sha,
+          tree: files.map((f) => ({
+            path: f.path,
+            mode: "100644",
+            type: "blob",
+            content: f.content,
+          })),
+        }),
+      });
+      const commit = await api(`/repos/${owner}/${repo}/git/commits`, {
+        method: "POST",
+        body: JSON.stringify({
+          message,
+          tree: tree.sha,
+          parents: [baseSha],
+        }),
+      });
+      await api(`/repos/${owner}/${repo}/git/refs/heads/main`, {
+        method: "PATCH",
+        body: JSON.stringify({ sha: commit.sha }),
       });
     }
 
@@ -399,6 +432,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         home: String(fromPartido.home || "").trim(),
         away: String(fromPartido.away || "").trim(),
         result: String(m.result || m.resultado || "").trim(),
+        appliedResult: String(m.appliedResult || "").trim(),
       };
     }
     function parseFixtureText(text, defaults = {}) {
@@ -460,9 +494,15 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         horario: m.time,
       };
     }
+    function matchKey(m) {
+      return [m.week, m.temp, m.cat, m.home, m.away, m.day, m.time].map((v) => String(v || "").toLowerCase().trim()).join("|");
+    }
     function renderFixture() {
       $("fx-body").innerHTML = fixture
-        .map((m, i) => `<tr data-i="${i}">
+        .map((m, i) => {
+          const parsed = describeResult(m.result);
+          const hint = parsed ? `${parsed.label} · ${parsed.homePts}-${parsed.awayPts} pts` : "";
+          return `<tr data-i="${i}">
           <td><input data-k="week" value="${escAttr(m.week)}" /></td>
           <td><input data-k="day" value="${escAttr(m.day)}" placeholder="Jueves" /></td>
           <td><input data-k="time" value="${escAttr(m.time)}" placeholder="19:00 - 20:30" /></td>
@@ -471,9 +511,13 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
           <td><input data-k="court" value="${escAttr(m.court)}" placeholder="Cancha 1" /></td>
           <td><input data-k="home" value="${escAttr(m.home)}" /></td>
           <td><input data-k="away" value="${escAttr(m.away)}" /></td>
-          <td><input data-k="result" value="${escAttr(m.result)}" /></td>
-          <td><button class="btn-danger" type="button" data-fx-del="${i}">X</button></td>
-        </tr>`)
+          <td class="col-result">
+            <input data-k="result" value="${escAttr(m.result)}" placeholder="6-4 6-2" />
+            ${hint ? `<small class="admin-hint">${hint}</small>` : ""}
+          </td>
+          <td><button class="admin-del" type="button" data-fx-del="${i}" aria-label="Eliminar">×</button></td>
+        </tr>`;
+        })
         .join("");
     }
     function showApp() {
@@ -776,6 +820,19 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       const k = e.target.dataset.k;
       if (!k) return;
       fixture[i][k] = e.target.value;
+      if (k === "result") {
+        const td = e.target.closest("td");
+        const parsed = describeResult(e.target.value);
+        let hint = td.querySelector(".admin-hint");
+        if (parsed) {
+          if (!hint) {
+            hint = document.createElement("small");
+            hint.className = "admin-hint";
+            td.appendChild(hint);
+          }
+          hint.textContent = `${parsed.label} · ${parsed.homePts}-${parsed.awayPts} pts`;
+        } else if (hint) hint.remove();
+      }
     });
     $("fx-body").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-fx-del]");
@@ -803,7 +860,16 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         week: $("fx-week").value.trim() || "Fecha 5",
         temp: siteData.currentSeason || "T4",
       });
-      fixture = parsed;
+      const prev = new Map(fixture.map((m) => [matchKey(m), m]));
+      fixture = parsed.map((m) => {
+        const old = prev.get(matchKey(m));
+        if (!old) return m;
+        return {
+          ...m,
+          result: m.result || old.result,
+          appliedResult: old.appliedResult,
+        };
+      });
       renderFixture();
       msg($("fx-msg"), `Cargué ${parsed.length} partidos de ${$("fx-week").value.trim() || "Fecha 5"}. Revisá y publicá.`, "ok");
     }
@@ -832,16 +898,34 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         return;
       }
       sessionStorage.setItem(KEY, token);
-      fixture = fixture.map(cleanMatch).filter((m) => m.home || m.away);
-      msg($("fx-msg"), "Publicando fixture…");
+      const nextFixture = fixture.map(cleanMatch).filter((m) => m.home || m.away);
+      const nextRanking = structuredClone(rows).map(cleanRow).filter((r) => r.name && r.cat.toLowerCase() !== "s masculina");
+      const report = applyFixtureResults(nextRanking, nextFixture);
+      msg($("fx-msg"), "Publicando fixture y ranking…");
       try {
-        await publishFile(
-          FIXTURE_PATH,
-          JSON.stringify(fixture, null, 2) + "\n",
-          "Actualiza fixture desde el admin."
+        await publishFiles(
+          [
+            { path: FIXTURE_PATH, content: JSON.stringify(nextFixture, null, 2) + "\n" },
+            { path: RANK_PATH, content: JSON.stringify(nextRanking, null, 2) + "\n" },
+          ],
+          report.applied
+            ? `Carga resultados del fixture y actualiza el ranking (${report.applied}).`
+            : "Actualiza fixture desde el admin."
         );
-        msg($("fx-msg"), "Fixture publicado. El sitio se actualiza en ~1 minuto.", "ok");
+        fixture = nextFixture;
+        rows = nextRanking;
+        fillFilters();
+        renderTable();
         renderFixture();
+        const extra = report.created.length ? ` Altas: ${[...new Set(report.created)].join(" · ")}.` : "";
+        const warn = report.unmatched.length ? ` ${report.unmatched[0]}` : "";
+        msg(
+          $("fx-msg"),
+          (report.applied
+            ? `Fixture y ranking publicados. ${report.applied} resultado${report.applied === 1 ? "" : "s"} sumados.${extra}`
+            : "Fixture publicado. El sitio se actualiza en ~1 minuto.") + warn,
+          report.unmatched.length ? "err" : "ok"
+        );
       } catch (err) {
         msg($("fx-msg"), err.message, "err");
       }

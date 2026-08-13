@@ -74,6 +74,10 @@ const courts = [...new Set(matches.map((m) => m.venue).filter(Boolean))].sort((a
     )}
   </div>
 
+  <script>
+    import { describeResult } from "../lib/scoring.js";
+    window.__ligaScoring = { describeResult };
+  </script>
   <script define:vars={{ matches }}>
     const q = document.querySelector("#q");
     const root = document.querySelector("#fixture-root");
@@ -90,11 +94,35 @@ const courts = [...new Set(matches.map((m) => m.venue).filter(Boolean))].sort((a
         ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
       );
     }
+    const describeResult = (raw) => window.__ligaScoring?.describeResult?.(raw) || null;
     function fold(s) {
       return String(s || "")
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
+    }
+    function vsBlock(m) {
+      const info = describeResult(m.result);
+      return `<div class="fixture-vs">
+        <div class="pair pair-a${info?.homeWin ? " winner" : ""}">
+          <span class="pair-label">Pareja 1</span>
+          <strong>${esc(m.home)}</strong>
+          ${info ? `<span class="pair-pts">${info.homePts} pts</span>` : ""}
+        </div>
+        <span class="vs">vs</span>
+        <div class="pair pair-b${info && !info.homeWin ? " winner" : ""}">
+          <span class="pair-label">Pareja 2</span>
+          <strong>${esc(m.away)}</strong>
+          ${info ? `<span class="pair-pts">${info.awayPts} pts</span>` : ""}
+        </div>
+      </div>
+      <div class="fixture-score">${
+        info
+          ? `<b>${esc(info.score)}</b><span>${info.label}</span>`
+          : m.result
+            ? `<b>${esc(m.result)}</b>`
+            : `<span class="tag">Pendiente</span>`
+      }</div>`;
     }
 
     function render() {
@@ -123,20 +151,9 @@ const courts = [...new Set(matches.map((m) => m.venue).filter(Boolean))].sort((a
                       <span>${esc(m.time)}</span>
                       <span>${esc(m.cat)}</span>
                     </div>
-                    <div class="fixture-vs">
-                      <div class="pair pair-a">
-                        <span class="pair-label">Pareja 1</span>
-                        <strong>${esc(m.home)}</strong>
-                      </div>
-                      <span class="vs">vs</span>
-                      <div class="pair pair-b">
-                        <span class="pair-label">Pareja 2</span>
-                        <strong>${esc(m.away)}</strong>
-                      </div>
-                    </div>
+                    ${vsBlock(m)}
                     <div class="fixture-place">
                       <span>${esc(m.venue)}${m.court ? ` · ${esc(m.court)}` : ""}</span>
-                      ${m.result ? `<b>${esc(m.result)}</b>` : `<span class="tag">Pendiente</span>`}
                     </div>
                   </article>`
                 )

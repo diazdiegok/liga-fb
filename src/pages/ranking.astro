@@ -84,7 +84,7 @@ const seasonCounts = Object.fromEntries(temps.map((t) => [t, rows.filter((p) => 
         const okTemp = !temp || p.temp === temp;
         const okQ = !term || (p.name || "").toLowerCase().includes(term);
         return okCat && okTemp && okQ;
-      });
+      }).sort((a, b) => Number(a.pos) - Number(b.pos) || Number(b.pts) - Number(a.pts));
       tbody.innerHTML = rows
         .map(
           (p) => `<tr class="${Number(p.pos) === 1 ? "top1" : ""}">

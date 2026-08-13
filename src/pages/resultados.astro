@@ -30,7 +30,7 @@ const cards = weeks.map((week) => {
     <header class="page-hero">
       <p class="kicker">Temporada {site.currentSeason}</p>
       <h1>Resultados</h1>
-      <p>Una card por fecha. Entrá a Fecha 5 para ver los partidos y cargar el marcador desde el admin.</p>
+      <p>Los marcadores salen del fixture. 2-0 suma 3 puntos; 2-1 suma 2 a la ganadora y 1 a la otra.</p>
     </header>
 
     {cards.length === 0 ? (
@@ -51,11 +51,16 @@ const cards = weeks.map((week) => {
     )}
   </div>
 
+  <script>
+    import { describeResult } from "../lib/scoring.js";
+    window.__ligaScoring = { describeResult };
+  </script>
   <script define:vars={{ matches, cards }}>
     const root = document.querySelector("#result-root");
     if (!root) throw new Error("resultados");
     let week = cards[0]?.week || "";
 
+    const describeResult = (raw) => window.__ligaScoring?.describeResult?.(raw) || null;
     function esc(s) {
       return String(s ?? "").replace(/[&<>"']/g, (c) =>
         ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
@@ -73,29 +78,36 @@ const cards = weeks.map((week) => {
             return `<h3 class="kicker" style="margin:18px 0 10px">${esc(cat)}</h3>
               <div class="fixture-list">
                 ${rows
-                  .map(
-                    (m) => `<article class="fixture-row">
+                  .map((m) => {
+                    const info = describeResult(m.result);
+                    return `<article class="fixture-row">
                       <div class="fixture-meta">
                         <span>${esc(m.day || m.date)}</span>
                         <span>${esc(m.time)}</span>
                         <span>${esc(m.venue)}${m.court ? ` · ${esc(m.court)}` : ""}</span>
                       </div>
                       <div class="fixture-vs">
-                        <div class="pair pair-a">
+                        <div class="pair pair-a${info?.homeWin ? " winner" : ""}">
                           <span class="pair-label">Pareja 1</span>
                           <strong>${esc(m.home)}</strong>
+                          ${info ? `<span class="pair-pts">${info.homePts} pts</span>` : ""}
                         </div>
                         <span class="vs">vs</span>
-                        <div class="pair pair-b">
+                        <div class="pair pair-b${info && !info.homeWin ? " winner" : ""}">
                           <span class="pair-label">Pareja 2</span>
                           <strong>${esc(m.away)}</strong>
+                          ${info ? `<span class="pair-pts">${info.awayPts} pts</span>` : ""}
                         </div>
                       </div>
-                      <div class="fixture-place">
-                        ${m.result ? `<b>${esc(m.result)}</b>` : `<span class="tag">Pendiente</span>`}
-                      </div>
-                    </article>`
-                  )
+                      <div class="fixture-score">${
+                        info
+                          ? `<b>${esc(info.score)}</b><span>${info.label}</span>`
+                          : m.result
+                            ? `<b>${esc(m.result)}</b>`
+                            : `<span class="tag">Pendiente</span>`
+                      }</div>
+                    </article>`;
+                  })
                   .join("")}
               </div>`;
           })

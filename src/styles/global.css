@@ -620,6 +620,23 @@ footer strong { color: var(--cream); }
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+.pair.winner strong { color: var(--lime); }
+.pair-pts {
+  color: var(--muted);
+  font-size: 12px;
+}
+.pair.winner .pair-pts { color: var(--lime); }
+.fixture-score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.fixture-score b { color: var(--cream); letter-spacing: 0.04em; }
 .fixture-place b { color: var(--cream); }
 .result-grid {
   display: grid;
@@ -758,6 +775,14 @@ footer strong { color: var(--cream); }
 .admin-table .col-pos, .admin-table .col-num { width: 64px; }
 .admin-table .col-cat { width: 160px; }
 .admin-table .col-temp { width: 88px; }
+.admin-table .col-result { min-width: 148px; }
+.admin-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--lime);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
 .admin-table .col-del { width: 44px; text-align: center; }
 .admin-del {
   width: 32px;

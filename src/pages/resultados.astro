@@ -1,0 +1,117 @@
+---
+import Layout from "../layouts/Layout.astro";
+import fixture from "../data/fixture.json";
+import { site } from "../data/site";
+
+const DAY_ORDER = ["lunes", "martes", "miércoles", "miercoles", "jueves", "viernes", "sábado", "sabado", "domingo"];
+const dayIdx = (d: string) => {
+  const key = String(d || "").trim().toLowerCase();
+  const i = DAY_ORDER.indexOf(key);
+  return i < 0 ? 99 : i;
+};
+const matches = [...fixture].sort((a, b) => {
+  const da = dayIdx(a.day);
+  const db = dayIdx(b.day);
+  if (da !== db) return da - db;
+  return String(a.time || "").localeCompare(String(b.time || ""), "es");
+});
+const weeks = [...new Set(matches.map((m) => m.week || "Sin fecha"))];
+const cards = weeks.map((week) => {
+  const list = matches.filter((m) => (m.week || "Sin fecha") === week);
+  const played = list.filter((m) => String(m.result || "").trim()).length;
+  return { week, total: list.length, played };
+});
+---
+<Layout
+  title="Resultados | Liga FB"
+  description="Resultados por fecha de Liga FB en Paraná."
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="kicker">Temporada {site.currentSeason}</p>
+      <h1>Resultados</h1>
+      <p>Una card por fecha. Entrá a Fecha 5 para ver los partidos y cargar el marcador desde el admin.</p>
+    </header>
+
+    {cards.length === 0 ? (
+      <p class="empty" style="display:block;padding:48px 0">Todavía no hay fechas. Cuando se publique el fixture van a aparecer acá.</p>
+    ) : (
+      <>
+        <div class="result-grid">
+          {cards.map((c, i) => (
+            <button class:list={["result-card", { open: i === 0 }]} type="button" data-week={c.week}>
+              <p class="kicker">Fecha</p>
+              <h2>{c.week}</h2>
+              <p>{c.played} / {c.total} resultados</p>
+            </button>
+          ))}
+        </div>
+        <div id="result-root" class="result-panel"></div>
+      </>
+    )}
+  </div>
+
+  <script define:vars={{ matches, cards }}>
+    const root = document.querySelector("#result-root");
+    if (!root) throw new Error("resultados");
+    let week = cards[0]?.week || "";
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+
+    function render() {
+      const list = matches.filter((m) => (m.week || "Sin fecha") === week);
+      const groups = [...new Set(list.map((m) => m.cat || "Sin categoría"))];
+      root.innerHTML = `<section class="fixture-week">
+        <h2>${esc(week)}</h2>
+        ${groups
+          .map((cat) => {
+            const rows = list.filter((m) => (m.cat || "Sin categoría") === cat);
+            return `<h3 class="kicker" style="margin:18px 0 10px">${esc(cat)}</h3>
+              <div class="fixture-list">
+                ${rows
+                  .map(
+                    (m) => `<article class="fixture-row">
+                      <div class="fixture-meta">
+                        <span>${esc(m.day || m.date)}</span>
+                        <span>${esc(m.time)}</span>
+                        <span>${esc(m.venue)}${m.court ? ` · ${esc(m.court)}` : ""}</span>
+                      </div>
+                      <div class="fixture-vs">
+                        <div class="pair">
+                          <span class="pair-label">Pareja 1</span>
+                          <strong>${esc(m.home)}</strong>
+                        </div>
+                        <span>vs</span>
+                        <div class="pair">
+                          <span class="pair-label">Pareja 2</span>
+                          <strong>${esc(m.away)}</strong>
+                        </div>
+                      </div>
+                      <div class="fixture-place">
+                        ${m.result ? `<b>${esc(m.result)}</b>` : `<span class="tag">Pendiente</span>`}
+                      </div>
+                    </article>`
+                  )
+                  .join("")}
+              </div>`;
+          })
+          .join("")}
+      </section>`;
+    }
+
+    document.querySelectorAll("[data-week]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-week]").forEach((b) => b.classList.remove("open"));
+        btn.classList.add("open");
+        week = btn.dataset.week;
+        render();
+        root.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+    render();
+  </script>
+</Layout>

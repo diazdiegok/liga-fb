@@ -133,8 +133,8 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
               <th>Cat</th>
               <th>Complejo</th>
               <th>Cancha</th>
-              <th>Local</th>
-              <th>Visitante</th>
+              <th>Pareja 1</th>
+              <th>Pareja 2</th>
               <th>Resultado</th>
               <th></th>
             </tr>
@@ -432,8 +432,8 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
           time: get("horario", "hora", "time"),
           venue: get("complejo", "venue", "sede"),
           court: get("cancha", "court"),
-          home: get("home", "local"),
-          away: get("away", "visitante"),
+          home: get("home", "local", "pareja 1", "pareja1"),
+          away: get("away", "visitante", "pareja 2", "pareja2"),
           partido: get("partido"),
           result: get("result", "resultado"),
         } : {

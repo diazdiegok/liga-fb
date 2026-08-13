@@ -21,22 +21,28 @@ const seasonCounts = Object.fromEntries(temps.map((t) => [t, rows.filter((p) => 
       <p>Escribí un apellido y filtrá por categoría. Elegí la temporada abajo.</p>
     </header>
 
-    <div class="season-bar" id="temps">
-      {temps.map((t) => (
-        <button class:list={["pill", { on: t === current }]} data-temp={t} type="button">
-          {t}
-          <span class="pill-count">{seasonCounts[t]} jugadores</span>
-        </button>
-      ))}
+    <div class="season-bar">
+      <span class="filter-kicker">Temporada</span>
+      <div class="seg" id="temps">
+        {temps.map((t) => (
+          <button class:list={["seg-item", { on: t === current }]} data-temp={t} type="button">
+            <strong>{t}</strong>
+            <span>{seasonCounts[t]}</span>
+          </button>
+        ))}
+      </div>
     </div>
 
     <div class="filters">
       <input class="search" id="q" type="search" placeholder="Buscar jugador o pareja…" autocomplete="off" />
-      <div class="pills">
-        <button class="pill on" data-cat="Todas" type="button">Todas</button>
-        {cats.map((c) => (
-          <button class="pill" data-cat={c} type="button">{c}</button>
-        ))}
+      <div class="filter-group" style="flex:1;min-width:220px">
+        <span>Categoría</span>
+        <div class="pills">
+          <button class="pill on" data-cat="Todas" type="button">Todas</button>
+          {cats.map((c) => (
+            <button class="pill" data-cat={c} type="button">{c}</button>
+          ))}
+        </div>
       </div>
       <span class="tag" id="count"></span>
     </div>

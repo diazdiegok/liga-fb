@@ -10,18 +10,18 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
 ---
 <Layout title="Admin | Liga FB" description="Panel para cargar ranking y datos de Liga FB." noindex>
   <div class="wrap admin-gate" id="gate">
-    <form class="admin-card form" id="login-form">
+    <form class="admin-card form" id="login-form" autocomplete="off">
       <p class="kicker">Panel interno</p>
       <h1>Admin Liga FB</h1>
       <div class="admin-step" id="step-pass">
         <p class="admin-help">Ingresá usuario y clave.</p>
         <label>Usuario
-          <input id="user" autocomplete="off" />
+          <input id="user" name="liga-user" autocomplete="off" autocapitalize="off" spellcheck="false" />
         </label>
         <label>Clave
-          <input id="pass" type="password" autocomplete="current-password" />
+          <input id="pass" name="liga-pass" type="password" autocomplete="new-password" />
         </label>
-        <div class="admin-btns">
+        <div class="admin-login-actions">
           <button class="btn btn-lime" type="submit" id="login-next">Continuar</button>
         </div>
       </div>
@@ -30,7 +30,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
         <label>Código
           <input id="otp" class="admin-otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
         </label>
-        <div class="admin-btns">
+        <div class="admin-login-actions">
           <button class="btn btn-lime" type="submit" id="login">Entrar</button>
           <button class="btn btn-ghost" type="button" id="login-back">Volver</button>
         </div>

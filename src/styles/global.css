@@ -565,13 +565,19 @@ footer strong { color: var(--cream); }
 .admin-card h1 { font-size: 36px; margin: 0; }
 .admin-step { display: grid; gap: 22px; }
 .admin-step[hidden], .admin-app[hidden], .admin-gate[hidden] { display: none !important; }
-.admin-btns {
+.admin-login-actions {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 8px;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
 }
-.admin-btns .btn { justify-content: center; width: 100%; }
+.admin-login-actions .btn {
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+}
 .admin-panel {
   display: grid;
   gap: 12px;

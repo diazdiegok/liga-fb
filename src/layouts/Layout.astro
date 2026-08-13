@@ -30,6 +30,20 @@ const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet" />
   </head>
   <body class:list={["court", { "is-admin": noindex }]}>
+    {!noindex && (
+      <div class="splash" id="splash" hidden>
+        <div class="splash-scene" aria-hidden="true">
+          <svg class="splash-art" viewBox="0 0 220 160">
+            <g class="splash-paddle">
+              <rect x="28" y="34" width="22" height="80" rx="9" fill="#f3f0e6" />
+              <rect x="34" y="108" width="10" height="30" rx="3" fill="#d6ff2f" />
+            </g>
+            <circle class="splash-ball" cx="150" cy="120" r="12" fill="#d6ff2f" />
+          </svg>
+          <p>Liga FB</p>
+        </div>
+      </div>
+    )}
     <nav>
       <div class="wrap">
         <a class="brand" href={page("")}>
@@ -69,6 +83,17 @@ const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
       document.querySelector("[data-menu]")?.addEventListener("click", () => {
         document.querySelector("nav")?.classList.toggle("open");
       });
+      const splash = document.getElementById("splash");
+      if (splash && !sessionStorage.getItem("liga-fb-splash")) {
+        splash.hidden = false;
+        sessionStorage.setItem("liga-fb-splash", "1");
+        setTimeout(() => {
+          splash.classList.add("out");
+          setTimeout(() => splash.remove(), 500);
+        }, 1700);
+      } else {
+        splash?.remove();
+      }
     </script>
   </body>
 </html>

@@ -16,20 +16,24 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       <div id="step-pass">
         <p class="admin-help">Ingresá usuario y clave.</p>
         <label>Usuario
-          <input id="user" autocomplete="username" />
+          <input id="user" autocomplete="off" />
         </label>
         <label>Clave
           <input id="pass" type="password" autocomplete="current-password" />
         </label>
-        <button class="btn btn-lime" type="submit" id="login-next">Continuar</button>
+        <div class="admin-btns">
+          <button class="btn btn-lime" type="submit" id="login-next">Continuar</button>
+        </div>
       </div>
       <div id="step-otp" hidden>
         <p class="admin-help">Ahora el código de 6 dígitos del autenticador.</p>
         <label>Código
           <input id="otp" class="admin-otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
         </label>
-        <button class="btn btn-lime" type="submit" id="login">Entrar</button>
-        <button class="btn btn-ghost" type="button" id="login-back">Volver</button>
+        <div class="admin-btns">
+          <button class="btn btn-lime" type="submit" id="login">Entrar</button>
+          <button class="btn btn-ghost" type="button" id="login-back">Volver</button>
+        </div>
       </div>
       <p class="admin-msg" id="login-msg"></p>
     </form>
@@ -53,19 +57,25 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     </div>
 
     <section id="tab-ranking">
-      <div class="admin-toolbar">
-        <select id="f-temp"></select>
-        <select id="f-cat"></select>
-        <input id="f-q" type="search" placeholder="Buscar…" />
-        <button class="btn btn-ghost" type="button" id="add">+ Jugador</button>
-        <button class="btn btn-ghost" type="button" id="csv-model">Modelo CSV</button>
-        <button class="btn btn-ghost" type="button" id="csv-export">Exportar CSV</button>
-        <label class="btn btn-ghost" style="cursor:pointer;margin:0">
-          Importar CSV
-          <input id="csv" type="file" accept=".csv,.txt,.tsv" hidden />
-        </label>
-        <label class="chk"><input id="replace-temp" type="checkbox" checked /> Reemplazar la temporada del CSV</label>
-        <button class="btn btn-lime" type="button" id="publish">Publicar ranking</button>
+      <div class="admin-panel">
+        <div class="admin-toolbar">
+          <select id="f-temp"></select>
+          <select id="f-cat"></select>
+          <input id="f-q" type="search" placeholder="Buscar…" />
+        </div>
+        <div class="admin-toolbar">
+          <button class="btn btn-ghost" type="button" id="add">+ Jugador</button>
+          <button class="btn btn-ghost" type="button" id="csv-model">Modelo CSV</button>
+          <button class="btn btn-ghost" type="button" id="csv-export">Exportar CSV</button>
+          <label class="btn btn-ghost" style="cursor:pointer">
+            Importar CSV
+            <input id="csv" type="file" accept=".csv,.txt,.tsv" hidden />
+          </label>
+          <label class="chk"><input id="replace-temp" type="checkbox" checked /> Reemplazar temporada del CSV</label>
+        </div>
+        <div class="admin-toolbar">
+          <button class="btn btn-lime" type="button" id="publish">Publicar ranking</button>
+        </div>
       </div>
       <p class="admin-help">Modelo CSV: name,cat,pts,pj,dif,pos,temp — descargalo, completá en Excel y volvé a importar.</p>
       <p class="admin-msg" id="rank-msg"></p>
@@ -90,15 +100,19 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     </section>
 
     <section id="tab-fixture" hidden>
-      <div class="admin-toolbar">
-        <button class="btn btn-ghost" type="button" id="fx-add">+ Partido</button>
-        <button class="btn btn-ghost" type="button" id="fx-model">Modelo CSV</button>
-        <button class="btn btn-ghost" type="button" id="fx-export">Exportar CSV</button>
-        <label class="btn btn-ghost" style="cursor:pointer;margin:0">
-          Importar CSV
-          <input id="fx-csv" type="file" accept=".csv,.txt,.tsv" hidden />
-        </label>
-        <button class="btn btn-lime" type="button" id="fx-publish">Publicar fixture</button>
+      <div class="admin-panel">
+        <div class="admin-toolbar">
+          <button class="btn btn-ghost" type="button" id="fx-add">+ Partido</button>
+          <button class="btn btn-ghost" type="button" id="fx-model">Modelo CSV</button>
+          <button class="btn btn-ghost" type="button" id="fx-export">Exportar CSV</button>
+          <label class="btn btn-ghost" style="cursor:pointer">
+            Importar CSV
+            <input id="fx-csv" type="file" accept=".csv,.txt,.tsv" hidden />
+          </label>
+        </div>
+        <div class="admin-toolbar">
+          <button class="btn btn-lime" type="button" id="fx-publish">Publicar fixture</button>
+        </div>
       </div>
       <p class="admin-help">Columnas del modelo: week,date,temp,cat,time,venue,home,away,result</p>
       <p class="admin-msg" id="fx-msg"></p>

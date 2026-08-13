@@ -52,7 +52,7 @@ const totalPlayers = rows.length;
 
   <div class="wrap">
     <div class="stats">
-      <div class="stat"><b>{totalPlayers}</b><span>Jugadores totales · todas las temporadas</span></div>
+      <div class="stat"><b>{totalPlayers}</b><span>Jugadores totales (todas las temporadas)</span></div>
       <div class="stat"><b>3</b><span>Sedes oficiales</span></div>
       <div class="stat"><b>1</b><span>Partido por semana</span></div>
     </div>
@@ -135,7 +135,7 @@ const totalPlayers = rows.length;
             <div class="venue-body">
               <h3>{v.name}</h3>
               <p>{v.address}</p>
-              <a href={`${page("sedes/")}#${v.id}`}>Cómo llegar</a>
+              <a href={`https://www.google.com/maps/search/?api=1&query=${v.maps}`} target="_blank" rel="noreferrer">Cómo llegar</a>
             </div>
           </article>
         ))}

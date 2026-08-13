@@ -563,13 +563,28 @@ footer strong { color: var(--cream); }
   gap: 14px;
 }
 .admin-card h1 { font-size: 36px; }
+.admin-btns {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 6px;
+}
+.admin-panel {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
 .admin-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  margin: 18px 0;
+  margin: 0;
 }
+.admin-toolbar .btn { padding: 10px 14px; }
 .admin-toolbar input, .admin-toolbar select, .admin-table input, .admin-table select {
   background: var(--bg-2);
   border: 1px solid var(--line);
@@ -600,3 +615,36 @@ footer strong { color: var(--cream); }
 .admin-help a { color: var(--lime); }
 .admin-scroll { overflow: auto; max-height: 62vh; border: 1px solid var(--line); }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #070907;
+  display: grid;
+  place-items: center;
+  transition: opacity 0.45s ease;
+}
+.splash.out { opacity: 0; pointer-events: none; }
+.splash-scene { text-align: center; }
+.splash-scene p {
+  margin-top: 12px;
+  font-family: var(--display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+.splash-art { width: min(220px, 60vw); height: auto; }
+.splash-paddle { transform-origin: 39px 138px; animation: swing 0.7s ease-in-out infinite alternate; }
+.splash-ball { animation: bounce 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) infinite alternate; }
+@keyframes bounce {
+  from { transform: translate(0, 0); }
+  to { transform: translate(-46px, -62px); }
+}
+@keyframes swing {
+  from { transform: rotate(-8deg); }
+  to { transform: rotate(16deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash { display: none; }
+}

@@ -1,0 +1,140 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { site } from "../data/site";
+import ranking from "../data/ranking.json";
+
+const t1 = ranking.filter((p) => p.temp === "T1");
+const leaders = ["A Masculina", "B Masculina", "B Femenino", "C Femenino"]
+  .map((cat) => t1.find((p) => p.cat === cat && p.pos === 1))
+  .filter(Boolean);
+---
+<Layout
+  title={`Liga FB | Pádel nocturno y academia en ${site.city}`}
+  description="Liga nocturna de pádel y academia de Fabián Boninni en Paraná. Ranking, clases de adultos y niños, tres sedes."
+>
+  <div class="hero-media">
+    <div class="wrap">
+      <header class="hero">
+        <div>
+          <p class="kicker">{site.city} · Lunes a viernes · Liga + Academia</p>
+          <h1>Sin esfuerzo<br />no hay gloria</h1>
+          <p class="lead">{site.ligaIntro}</p>
+          <div class="actions">
+            <a class="btn btn-lime" href="/inscripcion/">Sumate a la liga</a>
+            <a class="btn btn-ghost" href="/ranking/">Ver ranking</a>
+          </div>
+        </div>
+        <aside class="scoreboard">
+          <header>
+            <span>Líderes T1</span>
+            <span class="live">En juego</span>
+          </header>
+          {leaders.map((p) => p && (
+            <div class="row-player">
+              <span class="pos">{p.pos}</span>
+              <div>
+                {p.name}
+                <div class="cat">{p.cat} · {p.pts} pts</div>
+              </div>
+              <span class="pts">{p.pts}</span>
+            </div>
+          ))}
+        </aside>
+      </header>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><b>{t1.length}</b><span>Jugadores T1</span></div>
+      <div class="stat"><b>4</b><span>Temporadas</span></div>
+      <div class="stat"><b>3</b><span>Sedes oficiales</span></div>
+      <div class="stat"><b>1</b><span>Partido por semana</span></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="kicker">La liga</p>
+          <h2>Cómo se juega</h2>
+        </div>
+        <p>Categorías A, B y C. Damas y caballeros. Puntos individuales. Un partido por semana, lunes a viernes.</p>
+      </div>
+      <div class="steps">
+        <article class="step">
+          <div class="n">01</div>
+          <h3>Te anotas</h3>
+          <p>Elegís categoría y sede. Te confirmamos por WhatsApp y entras al fixture.</p>
+        </article>
+        <article class="step">
+          <div class="n">02</div>
+          <h3>Jugás de noche</h3>
+          <p>En Palermo, Open o Américas — y también en Ciclista, Farola y otros complejos de la ciudad.</p>
+        </article>
+        <article class="step">
+          <div class="n">03</div>
+          <h3>Subís en la tabla</h3>
+          <p>Buscás tu nombre. Ves posición, partidos y diferencia de sets. Cuatro temporadas publicadas.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="split">
+    <div class="split-block">
+      <p class="kicker">Liga FB</p>
+      <h2>Competí</h2>
+      <p class="lead">Liga nocturna con más de 250 jugadores. Ranking público de T1 a T4.</p>
+      <ul>
+        <li>Categorías A / B / C — damas y caballeros</li>
+        <li>Sedes en {site.city}</li>
+        <li>Ranking con buscador</li>
+      </ul>
+      <div class="actions">
+        <a class="btn btn-lime" href="/inscripcion/">Inscribirme a la liga</a>
+      </div>
+    </div>
+    <div class="split-block">
+      <p class="kicker">Academia FB</p>
+      <h2>Entrená</h2>
+      <p class="lead">Academia de pádel profesional y de niños de Fabián Boninni. Clases de lunes a viernes, de 10 a 17.</p>
+      <ul>
+        <li>Clases adultos — técnica y partido</li>
+        <li>Clases niños — iniciación y competencia</li>
+        <li>Nutricionista y gym</li>
+      </ul>
+      <div class="actions">
+        <a class="btn btn-ghost" href="/academia/">Ver academia</a>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Dónde</p>
+          <h2>Sedes oficiales</h2>
+        </div>
+        <a class="btn btn-ghost" href="/sedes/">Todas las sedes</a>
+      </div>
+      <div class="venues">
+        {site.venues.map((v) => (
+          <article class="venue">
+            <div class="venue-photo">
+              <img class="photo" src={v.image} alt={v.name} />
+              <span>Abierta</span>
+            </div>
+            <div class="venue-body">
+              <h3>{v.name}</h3>
+              <p>{v.address}</p>
+              <a href={`/sedes/#${v.id}`}>Cómo llegar</a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>

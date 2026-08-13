@@ -1,0 +1,70 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { site } from "../data/site";
+---
+<Layout
+  title="Inscripción | Liga FB"
+  description="Anotate a la Liga FB o a las clases de la academia en Paraná. Te confirmamos por WhatsApp."
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="kicker">Un solo formulario</p>
+      <h1>Sumate</h1>
+      <p>Liga, academia o las dos. El mensaje sale por WhatsApp con los datos armados.</p>
+    </header>
+
+    <form class="form" id="form" style="padding: 32px 0 80px">
+      <label>Nombre
+        <input name="nombre" required placeholder="Tu nombre y apellido" />
+      </label>
+      <label>WhatsApp
+        <input name="tel" required placeholder="Ej. 343 555 0000" />
+      </label>
+      <label>Quiero
+        <select name="tipo">
+          <option>Liga nocturna</option>
+          <option>Clases de academia</option>
+          <option>Liga + academia</option>
+        </select>
+      </label>
+      <label>Categoría / nivel
+        <select name="cat">
+          <option>A</option>
+          <option selected>B</option>
+          <option>C</option>
+          <option>Niños</option>
+          <option>No sé — me orientan</option>
+        </select>
+      </label>
+      <label>Sede preferida
+        <select name="sede">
+          {site.venues.map((v) => <option>{v.name}</option>)}
+          <option>Indistinto</option>
+        </select>
+      </label>
+      <label>Comentario
+        <textarea name="nota" rows="3" placeholder="Días, horario, si ya jugaste en la liga…"></textarea>
+      </label>
+      <button class="btn btn-lime" type="submit">Enviar por WhatsApp</button>
+    </form>
+  </div>
+
+  <script define:vars={{ number: site.whatsapp }}>
+    document.querySelector("#form")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const text = [
+        "Hola, quiero sumarme a Liga FB.",
+        `Nombre: ${data.nombre}`,
+        `Tel: ${data.tel}`,
+        `Quiero: ${data.tipo}`,
+        `Nivel: ${data.cat}`,
+        `Sede: ${data.sede}`,
+        data.nota ? `Nota: ${data.nota}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+      window.open("https://wa.me/" + number + "?text=" + encodeURIComponent(text), "_blank");
+    });
+  </script>
+</Layout>

@@ -1,0 +1,108 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ranking from "../data/ranking.json";
+
+const temps = [...new Set(ranking.map((p) => p.temp))];
+const cats = [...new Set(ranking.map((p) => p.cat))].sort();
+---
+<Layout
+  title="Ranking | Liga FB"
+  description="Ranking actualizado de Liga FB en Paraná. Buscá tu nombre, filtrá por categoría y temporada."
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="kicker">{ranking.length} registros · T1 a T4</p>
+      <h1>Ranking</h1>
+      <p>Escribí un apellido. Filtrá temporada y categoría. Datos extraídos de la liga publicada.</p>
+    </header>
+
+    <div class="filters">
+      <input class="search" id="q" type="search" placeholder="Buscar jugador o pareja…" autocomplete="off" />
+      <div class="pills" id="temps">
+        {temps.map((t, i) => (
+          <button class:list={["pill", { on: i === temps.length - 1 }]} data-temp={t} type="button">{t}</button>
+        ))}
+      </div>
+      <div class="pills">
+        <button class="pill on" data-cat="Todas" type="button">Todas</button>
+        {cats.map((c) => (
+          <button class="pill" data-cat={c} type="button">{c}</button>
+        ))}
+      </div>
+      <span class="tag" id="count"></span>
+    </div>
+
+    <table class="board">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Jugador / pareja</th>
+          <th>Categoría</th>
+          <th>PJ</th>
+          <th>Dif. sets</th>
+          <th>Pts</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="empty" id="empty" hidden>No hay jugadores con ese filtro.</p>
+  </div>
+
+  <script define:vars={{ players: ranking }}>
+    const q = document.querySelector("#q");
+    const tbody = document.querySelector("#rows");
+    const empty = document.querySelector("#empty");
+    const count = document.querySelector("#count");
+    let cat = "Todas";
+    let temp = document.querySelector("[data-temp].on")?.dataset.temp || "";
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+
+    function render() {
+      const term = (q.value || "").trim().toLowerCase();
+      const rows = players.filter((p) => {
+        const okCat = cat === "Todas" || p.cat === cat;
+        const okTemp = !temp || p.temp === temp;
+        const okQ = !term || (p.name || "").toLowerCase().includes(term);
+        return okCat && okTemp && okQ;
+      });
+      tbody.innerHTML = rows
+        .map(
+          (p) => `<tr class="${Number(p.pos) === 1 ? "top1" : ""}">
+          <td class="pos">${esc(p.pos)}</td>
+          <td class="name">${esc(p.name)}</td>
+          <td>${esc(p.cat)}</td>
+          <td>${esc(p.pj)}</td>
+          <td>${Number(p.dif) > 0 ? "+" : ""}${esc(p.dif)}</td>
+          <td><strong>${esc(p.pts)}</strong></td>
+        </tr>`
+        )
+        .join("");
+      empty.hidden = rows.length > 0;
+      count.textContent = rows.length + " jugadores";
+    }
+
+    q.addEventListener("input", render);
+    document.querySelectorAll("[data-cat]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-cat]").forEach((b) => b.classList.remove("on"));
+        btn.classList.add("on");
+        cat = btn.dataset.cat;
+        render();
+      });
+    });
+    document.querySelectorAll("[data-temp]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-temp]").forEach((b) => b.classList.remove("on"));
+        btn.classList.add("on");
+        temp = btn.dataset.temp;
+        render();
+      });
+    });
+    render();
+  </script>
+</Layout>

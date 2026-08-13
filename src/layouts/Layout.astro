@@ -1,0 +1,66 @@
+---
+import "../styles/global.css";
+import { site } from "../data/site";
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const path = Astro.url.pathname;
+const wa = `https://wa.me/${site.whatsapp}`;
+---
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/images/Logo-FB-blanco-sin-fondo-02.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body class="court">
+    <nav>
+      <div class="wrap">
+        <a class="brand" href="/">
+          <img src="/images/Logo-FB-blanco-sin-fondo-02.png" alt="Liga FB" />
+          LIGA FB
+        </a>
+        <ul class="nav-links">
+          <li><a href="/" aria-current={path === "/" ? "page" : undefined}>Inicio</a></li>
+          <li><a href="/ranking/" aria-current={path.startsWith("/ranking") ? "page" : undefined}>Ranking</a></li>
+          <li><a href="/academia/" aria-current={path.startsWith("/academia") ? "page" : undefined}>Academia</a></li>
+          <li><a href="/sedes/" aria-current={path.startsWith("/sedes") ? "page" : undefined}>Sedes</a></li>
+        </ul>
+        <a class="nav-cta" href="/inscripcion/">Sumate</a>
+        <button class="menu-btn" type="button" data-menu>Menu</button>
+      </div>
+    </nav>
+    <slot />
+    <footer>
+      <div class="wrap">
+        <div>
+          <strong>LIGA FB ® {site.year}</strong>
+          <p>Pádel nocturno y academia · {site.city}, {site.province}</p>
+        </div>
+        <div>
+          <a href={site.instagram} target="_blank" rel="noreferrer">Instagram</a>
+          ·
+          <a href="/inscripcion/">WhatsApp</a>
+        </div>
+      </div>
+    </footer>
+    <a class="wa" href={wa} title="WhatsApp">WA</a>
+    <script>
+      document.querySelector("[data-menu]")?.addEventListener("click", () => {
+        document.querySelector("nav")?.classList.toggle("open");
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,122 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { site } from "../data/site";
+---
+<Layout
+  title="Academia FB | Clases de pádel en Paraná"
+  description="Academia de pádel profesional y de niños de Fabián Boninni. Clases de lunes a viernes en Paraná."
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="kicker">Academia de Fabián Boninni</p>
+      <h1>Entrená<br />como se juega</h1>
+      <p>Clases de adultos y niños, lunes a viernes, de 10 a 17. Técnica, partido y competencia. La liga es el examen; la academia, el entrenamiento.</p>
+      <div class="actions">
+        <a class="btn btn-lime" href="/inscripcion/">Quiero clases</a>
+        <a class="btn btn-ghost" href="/sedes/">Ver sedes</a>
+      </div>
+    </header>
+  </div>
+
+  <section>
+    <div class="wrap sede-grid" style="gap:32px;align-items:center">
+      <img class="portrait" src="/images/FABI-VERDE.png" alt="Fabián Boninni" />
+      <div>
+        <p class="kicker">Director</p>
+        <h2>Fabián Boninni</h2>
+        <p class="lead">Academia de pádel profesional y de niños. Mismo staff, misma exigencia que la liga nocturna.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Programas</p>
+          <h2>Qué entrenás</h2>
+        </div>
+      </div>
+      <div class="steps">
+        <article class="step">
+          <div class="n">01</div>
+          <h3>Adultos</h3>
+          <p>Técnica, táctica y partido. Grupos por nivel.</p>
+        </article>
+        <article class="step">
+          <div class="n">02</div>
+          <h3>Niños</h3>
+          <p>Iniciación y competencia. Que quieran volver el martes.</p>
+        </article>
+        <article class="step">
+          <div class="n">03</div>
+          <h3>Complemento</h3>
+          <p>Nutricionista y gym para rendir en la liga.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Staff</p>
+          <h2>El equipo</h2>
+        </div>
+      </div>
+      <div class="team">
+        {site.team.map((p) => (
+          <figure>
+            <img src={p.image} alt={p.name} />
+            <figcaption>{p.name} · {p.role}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="venues">
+        <article class="venue">
+          <div class="venue-photo"><img class="photo" src="/images/gym-1.jpg" alt="Gym" /><span>Gym</span></div>
+          <div class="venue-body"><h3>Gimnasio</h3><p>Complemento físico para la liga.</p></div>
+        </article>
+        <article class="venue">
+          <div class="venue-photo"><img class="photo" src="/images/nutri-1.jpg" alt="Nutrición" /><span>Nutri</span></div>
+          <div class="venue-body"><h3>Nutricionista</h3><p>Acompañamiento para rendir en cancha.</p></div>
+        </article>
+        <article class="venue">
+          <div class="venue-photo"><img class="photo" src="/images/DSC0348-scaled.jpg" alt="Clase de pádel" /><span>Cancha</span></div>
+          <div class="venue-body"><h3>En cancha</h3><p>Foto real de la academia en Complejo Capitán.</p></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Grilla</p>
+          <h2>Horarios</h2>
+        </div>
+        <p>Turnos de 10 a 17, lunes a viernes. Confirmá cupo por WhatsApp.</p>
+      </div>
+      <table class="schedule">
+        <thead>
+          <tr><th></th><th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>10–11</td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td></tr>
+          <tr><td>11–12</td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td></tr>
+          <tr><td>12–13</td><td><span class="dot"></span></td><td><span class="dot off"></span></td><td><span class="dot"></span></td><td><span class="dot off"></span></td><td><span class="dot"></span></td></tr>
+          <tr><td>14–15</td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td></tr>
+          <tr><td>15–16</td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td></tr>
+          <tr><td>16–17</td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot off"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</Layout>

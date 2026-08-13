@@ -1,0 +1,52 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { site } from "../data/site";
+---
+<Layout
+  title="Sedes | Liga FB Paraná"
+  description="Canchas oficiales de Liga FB en Paraná: Palermo Pádel, Open y Américas."
+>
+  <div class="wrap">
+    <header class="page-hero">
+      <p class="kicker">Paraná, Entre Ríos</p>
+      <h1>Sedes</h1>
+      <p>Direcciones y fotos reales extraídas del sitio actual. Cancha abierta en las tres oficiales.</p>
+    </header>
+
+    {site.venues.map((v) => (
+      <section id={v.id} style="padding:16px 0 28px">
+        <article class="venue sede-grid">
+          <div class="venue-photo">
+            <img class="photo" src={v.image} alt={v.name} />
+            <span>{v.name}</span>
+          </div>
+          <div class="venue-body">
+            <h2>{v.name}</h2>
+            <p>{v.address}</p>
+            <p>{v.city}</p>
+            <p>{v.type}</p>
+            <a href={`https://www.google.com/maps/search/?api=1&query=${v.maps}`} target="_blank" rel="noreferrer">Abrir en Maps</a>
+          </div>
+        </article>
+      </section>
+    ))}
+
+    <section>
+      <div class="section-head">
+        <div>
+          <p class="kicker">También jugamos</p>
+          <h2>Otros complejos</h2>
+        </div>
+        <p>La liga también pasa por Ciclista, Farola, Capitán y más — como dice el texto original de la liga.</p>
+      </div>
+      <div class="venues">
+        {site.moreVenues.map((v) => (
+          <article class="venue">
+            <div class="venue-photo"><img class="photo" src={v.image} alt={v.name} /></div>
+            <div class="venue-body"><h3>{v.name}</h3></div>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</Layout>

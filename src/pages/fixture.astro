@@ -3,18 +3,32 @@ import Layout from "../layouts/Layout.astro";
 import fixture from "../data/fixture.json";
 import { site } from "../data/site";
 
-const matches = [...fixture].sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.time).localeCompare(String(b.time)));
-const weeks = [...new Set(matches.map((m) => m.week || "Sin semana"))];
+const DAY_ORDER = ["lunes", "martes", "miercoles", "miércoles", "jueves", "viernes", "sabado", "sábado", "domingo"];
+const dayIdx = (d: string) => {
+  const key = String(d || "").trim().toLowerCase();
+  const i = DAY_ORDER.indexOf(key);
+  return i < 0 ? 99 : i;
+};
+const matches = [...fixture].sort((a, b) => {
+  const wa = String(a.week || "");
+  const wb = String(b.week || "");
+  if (wa !== wb) return wa.localeCompare(wb, "es");
+  const da = dayIdx(a.day);
+  const db = dayIdx(b.day);
+  if (da !== db) return da - db;
+  return String(a.time || "").localeCompare(String(b.time || ""), "es");
+});
+const weeks = [...new Set(matches.map((m) => m.week || "Sin fecha"))];
 ---
 <Layout
   title="Fixture | Liga FB"
-  description="Partidos semanales de Liga FB en Paraná. Fecha, sede, categoría y resultado."
+  description="Partidos semanales de Liga FB en Paraná. Día, horario, complejo, cancha y categoría."
 >
   <div class="wrap">
     <header class="page-hero">
       <p class="kicker">Temporada {site.currentSeason} · lunes a sábado</p>
       <h1>Fixture</h1>
-      <p>Partidos de la semana. Se cargan desde el admin.</p>
+      <p>Partidos de la semana. Se cargan desde el admin con el Excel de Drive.</p>
     </header>
 
     {matches.length === 0 ? (
@@ -24,12 +38,11 @@ const weeks = [...new Set(matches.map((m) => m.week || "Sin semana"))];
         <section class="fixture-week">
           <h2>{week}</h2>
           <div class="fixture-list">
-            {matches.filter((m) => (m.week || "Sin semana") === week).map((m) => (
+            {matches.filter((m) => (m.week || "Sin fecha") === week).map((m) => (
               <article class="fixture-row">
                 <div class="fixture-meta">
-                  <span>{m.date}</span>
+                  <span>{m.day || m.date}</span>
                   <span>{m.time}</span>
-                  <span>{m.temp}</span>
                   <span>{m.cat}</span>
                 </div>
                 <div class="fixture-vs">
@@ -38,7 +51,7 @@ const weeks = [...new Set(matches.map((m) => m.week || "Sin semana"))];
                   <strong>{m.away}</strong>
                 </div>
                 <div class="fixture-place">
-                  <span>{m.venue}</span>
+                  <span>{m.venue}{m.court ? ` · ${m.court}` : ""}</span>
                   {m.result ? <b>{m.result}</b> : <span class="tag">Pendiente</span>}
                 </div>
               </article>

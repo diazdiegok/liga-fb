@@ -622,6 +622,25 @@ footer strong { color: var(--cream); }
 .btn-danger { background: transparent; border: 1px solid #ff8a8a; color: #ff8a8a; padding: 6px 10px; cursor: pointer; }
 .admin-help { color: var(--muted); font-size: 13px; max-width: 720px; line-height: 1.5; margin: 0; }
 .admin-help a { color: var(--lime); }
+.admin-help textarea {
+  display: block;
+  width: 100%;
+  max-width: 920px;
+  margin-top: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--cream);
+  padding: 10px 12px;
+  font: inherit;
+  resize: vertical;
+}
+.admin-week {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
 .admin-scroll { overflow: auto; max-height: 62vh; border: 1px solid var(--line); }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 

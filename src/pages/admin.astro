@@ -102,6 +102,9 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     <section id="tab-fixture" hidden>
       <div class="admin-panel">
         <div class="admin-toolbar">
+          <label class="admin-week">Fecha
+            <input id="fx-week" value="Fecha 5" placeholder="Fecha 5" />
+          </label>
           <button class="btn btn-ghost" type="button" id="fx-add">+ Partido</button>
           <button class="btn btn-ghost" type="button" id="fx-model">Modelo CSV</button>
           <button class="btn btn-ghost" type="button" id="fx-export">Exportar CSV</button>
@@ -110,22 +113,26 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
             <input id="fx-csv" type="file" accept=".csv,.txt,.tsv" hidden />
           </label>
         </div>
+        <label class="admin-help" style="display:block;margin-top:12px">Pegá la tabla de Drive (categoria, partido, complejo, cancha, dia, horario)
+          <textarea id="fx-paste" rows="6" placeholder="categoria	partido	complejo	cancha	dia	horario"></textarea>
+        </label>
         <div class="admin-toolbar">
+          <button class="btn btn-ghost" type="button" id="fx-paste-btn">Cargar tabla</button>
           <button class="btn btn-lime" type="button" id="fx-publish">Publicar fixture</button>
         </div>
       </div>
-      <p class="admin-help">Columnas del modelo: week,date,temp,cat,time,venue,home,away,result</p>
+      <p class="admin-help">Acepta el Excel/Drive actual: categoria, partido, complejo, cancha, dia, horario. El partido va como “Apellido - Apellido vs Apellido - Apellido”.</p>
       <p class="admin-msg" id="fx-msg"></p>
       <div class="admin-scroll">
         <table class="admin-table">
           <thead>
             <tr>
               <th>Semana</th>
-              <th>Fecha</th>
-              <th>Hora</th>
-              <th>Temp</th>
-              <th>Categoría</th>
-              <th>Sede</th>
+              <th>Día</th>
+              <th>Horario</th>
+              <th>Cat</th>
+              <th>Complejo</th>
+              <th>Cancha</th>
               <th>Local</th>
               <th>Visitante</th>
               <th>Resultado</th>
@@ -173,8 +180,20 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     const SITE_PATH = "src/data/site.json";
     const FIXTURE_PATH = "src/data/fixture.json";
     const RANK_COLS = ["name", "cat", "pts", "pj", "dif", "pos", "temp"];
-    const FX_COLS = ["week", "date", "temp", "cat", "time", "venue", "home", "away", "result"];
+    const FX_COLS = ["categoria", "partido", "complejo", "cancha", "dia", "horario"];
     const CATS = ["A Masculina", "B Masculina", "C Masculina", "A Femenino", "B Femenino", "C Femenino"];
+    const CAT_MAP = {
+      "A MASC": "A Masculina", "A MASCULINA": "A Masculina",
+      "B MASC": "B Masculina", "B MASCULINA": "B Masculina",
+      "C MASC": "C Masculina", "C MASCULINA": "C Masculina",
+      "A FEM": "A Femenino", "A FEMENINO": "A Femenino",
+      "B FEM": "B Femenino", "B FEMENINO": "B Femenino",
+      "C FEM": "C Femenino", "C FEMENINO": "C Femenino",
+    };
+    const VENUE_MAP = {
+      OPEN: "Open", AMERICAS: "Américas", "AMÉRICAS": "Américas",
+      PALERMO: "Palermo Pádel", TERRAZAS: "Terrazas",
+    };
 
     let rows = structuredClone(initialRows);
     let siteData = structuredClone(initialSite);
@@ -327,31 +346,131 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       a.download = filename;
       a.click();
     }
-    function cleanMatch(m) {
+    function escAttr(v) {
+      return String(v || "").replace(/"/g, "&quot;");
+    }
+    function normCat(c) {
+      const s = String(c || "").trim().toUpperCase().replace(/\s+/g, " ");
+      return CAT_MAP[s] || String(c || "").trim();
+    }
+    function normVenue(v) {
+      const s = String(v || "").trim().toUpperCase();
+      return VENUE_MAP[s] || String(v || "").trim();
+    }
+    function normTime(t) {
+      return String(t || "").replace(/(\d):\.(?=\d)/g, "$1:").replace(/\s+/g, " ").trim();
+    }
+    function splitPartido(partido) {
+      const raw = String(partido || "").trim();
+      const parts = raw.split(/\s+vs\.?\s+/i);
+      const pair = (s) => s.trim().replace(/\s*[–—-]\s*/g, " / ");
+      if (parts.length >= 2) return { home: pair(parts[0]), away: pair(parts.slice(1).join(" vs ")) };
+      return { home: pair(raw), away: "" };
+    }
+    function splitLine(line, sep) {
+      const out = [];
+      let cur = "";
+      let q = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') q = !q;
+        else if (ch === sep && !q) {
+          out.push(cur.trim());
+          cur = "";
+        } else cur += ch;
+      }
+      out.push(cur.trim());
+      return out;
+    }
+    function cleanMatch(m, defaults = {}) {
+      const fromPartido = (!m.home && !m.away && (m.partido || ""))
+        ? splitPartido(m.partido)
+        : { home: m.home, away: m.away };
       return {
-        week: String(m.week || "").trim(),
+        week: String(m.week || defaults.week || "").trim(),
+        day: String(m.day || m.dia || "").trim(),
         date: String(m.date || "").trim(),
-        temp: String(m.temp || siteData.currentSeason || "T4").trim().toUpperCase(),
-        cat: String(m.cat || "").trim(),
-        time: String(m.time || "").trim(),
-        venue: String(m.venue || "").trim(),
-        home: String(m.home || "").trim(),
-        away: String(m.away || "").trim(),
-        result: String(m.result || "").trim(),
+        temp: String(m.temp || defaults.temp || siteData.currentSeason || "T4").trim().toUpperCase(),
+        cat: normCat(m.cat || m.categoria || m.categoría || ""),
+        time: normTime(m.time || m.horario || m.hora || ""),
+        venue: normVenue(m.venue || m.complejo || m.sede || ""),
+        court: String(m.court || m.cancha || "").trim(),
+        home: String(fromPartido.home || "").trim(),
+        away: String(fromPartido.away || "").trim(),
+        result: String(m.result || m.resultado || "").trim(),
+      };
+    }
+    function parseFixtureText(text, defaults = {}) {
+      const raw = String(text || "").replace(/^\uFEFF/, "").trim();
+      if (!raw) throw new Error("No hay datos para cargar.");
+      const first = raw.split(/\r?\n/, 1)[0] || "";
+      const sep = first.includes("\t") ? "\t" : first.includes(";") ? ";" : ",";
+      const lines = raw.split(/\r?\n/).filter((l) => l.trim());
+      const headerCells = splitLine(lines[0], sep).map((h) => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+      const looksHeader = headerCells.some((h) => ["categoria", "partido", "complejo", "cancha", "dia", "horario", "home", "local", "week", "cat"].includes(h));
+      const header = looksHeader ? headerCells : [];
+      const dataLines = looksHeader ? lines.slice(1) : lines;
+      const idx = (names) => {
+        for (const name of names) {
+          const i = header.indexOf(name);
+          if (i >= 0) return i;
+        }
+        return -1;
+      };
+      const parsed = dataLines.map((line) => {
+        const cols = splitLine(line, sep);
+        const get = (...names) => {
+          const i = idx(names);
+          return i >= 0 ? cols[i] : "";
+        };
+        const row = looksHeader ? {
+          week: get("week", "semana"),
+          day: get("dia", "day"),
+          date: get("date"),
+          temp: get("temp", "temporada"),
+          cat: get("cat", "categoria"),
+          time: get("horario", "hora", "time"),
+          venue: get("complejo", "venue", "sede"),
+          court: get("cancha", "court"),
+          home: get("home", "local"),
+          away: get("away", "visitante"),
+          partido: get("partido"),
+          result: get("result", "resultado"),
+        } : {
+          cat: cols[0],
+          partido: cols[1],
+          venue: cols[2],
+          court: cols[3],
+          day: cols[4],
+          time: cols[5],
+        };
+        return cleanMatch(row, defaults);
+      }).filter((m) => m.home || m.away);
+      if (!parsed.length) throw new Error("No encontré partidos. Revisá que estén las columnas categoria, partido, complejo, cancha, dia, horario.");
+      return parsed;
+    }
+    function driveRow(m) {
+      return {
+        categoria: m.cat,
+        partido: [m.home, m.away].filter(Boolean).join(" vs "),
+        complejo: m.venue,
+        cancha: m.court,
+        dia: m.day,
+        horario: m.time,
       };
     }
     function renderFixture() {
       $("fx-body").innerHTML = fixture
         .map((m, i) => `<tr data-i="${i}">
-          <td><input data-k="week" value="${String(m.week || "").replace(/"/g, "&quot;")}" /></td>
-          <td><input data-k="date" value="${String(m.date || "").replace(/"/g, "&quot;")}" placeholder="2026-08-17" /></td>
-          <td><input data-k="time" value="${String(m.time || "").replace(/"/g, "&quot;")}" placeholder="21:00" /></td>
-          <td><input data-k="temp" value="${String(m.temp || "").replace(/"/g, "&quot;")}" /></td>
-          <td><input data-k="cat" value="${String(m.cat || "").replace(/"/g, "&quot;")}" /></td>
-          <td><input data-k="venue" value="${String(m.venue || "").replace(/"/g, "&quot;")}" /></td>
-          <td><input data-k="home" value="${String(m.home || "").replace(/"/g, "&quot;")}" /></td>
-          <td><input data-k="away" value="${String(m.away || "").replace(/"/g, "&quot;")}" /></td>
-          <td><input data-k="result" value="${String(m.result || "").replace(/"/g, "&quot;")}" /></td>
+          <td><input data-k="week" value="${escAttr(m.week)}" /></td>
+          <td><input data-k="day" value="${escAttr(m.day)}" placeholder="Jueves" /></td>
+          <td><input data-k="time" value="${escAttr(m.time)}" placeholder="19:00 - 20:30" /></td>
+          <td><input data-k="cat" value="${escAttr(m.cat)}" /></td>
+          <td><input data-k="venue" value="${escAttr(m.venue)}" /></td>
+          <td><input data-k="court" value="${escAttr(m.court)}" placeholder="Cancha 1" /></td>
+          <td><input data-k="home" value="${escAttr(m.home)}" /></td>
+          <td><input data-k="away" value="${escAttr(m.away)}" /></td>
+          <td><input data-k="result" value="${escAttr(m.result)}" /></td>
           <td><button class="btn-danger" type="button" data-fx-del="${i}">X</button></td>
         </tr>`)
         .join("");
@@ -627,12 +746,13 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
 
     $("fx-add").addEventListener("click", () => {
       fixture.push(cleanMatch({
-        week: "Semana 1",
-        date: "",
+        week: $("fx-week").value.trim() || "Fecha 5",
+        day: "Jueves",
         temp: siteData.currentSeason || "T4",
         cat: "A Masculina",
-        time: "21:00",
-        venue: "Palermo Pádel",
+        time: "19:00 - 20:30",
+        venue: "Open",
+        court: "Cancha 1",
         home: "",
         away: "",
         result: "",
@@ -655,67 +775,41 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     });
     $("fx-model").addEventListener("click", () => {
       downloadCsv("modelo-fixture.csv", FX_COLS, [{
-        week: "Semana 1",
-        date: "2026-08-17",
-        temp: siteData.currentSeason || "T4",
-        cat: "A Masculina",
-        time: "21:00",
-        venue: "Palermo Pádel",
-        home: "Apellido / Apellido",
-        away: "Apellido / Apellido",
-        result: "",
+        categoria: "A MASC",
+        partido: "Apellido Nombre - Apellido Nombre vs Apellido Nombre - Apellido Nombre",
+        complejo: "OPEN",
+        cancha: "Cancha 1",
+        dia: "Jueves",
+        horario: "19:00 - 20:30",
       }]);
-      msg($("fx-msg"), "Descargué el modelo CSV de fixture. Completalo y usá Importar CSV.", "ok");
+      msg($("fx-msg"), "Descargué el modelo CSV igual al de Drive. Completalo y usá Importar CSV o Pegar tabla.", "ok");
     });
     $("fx-export").addEventListener("click", () => {
-      downloadCsv("fixture-liga-fb.csv", FX_COLS, fixture.map(cleanMatch));
-      msg($("fx-msg"), "Exporté el fixture actual.", "ok");
+      downloadCsv("fixture-liga-fb.csv", FX_COLS, fixture.map(cleanMatch).map(driveRow));
+      msg($("fx-msg"), "Exporté el fixture actual en el formato de Drive.", "ok");
     });
+    function loadFixtureText(text) {
+      const parsed = parseFixtureText(text, {
+        week: $("fx-week").value.trim() || "Fecha 5",
+        temp: siteData.currentSeason || "T4",
+      });
+      fixture = parsed;
+      renderFixture();
+      msg($("fx-msg"), `Cargué ${parsed.length} partidos de ${$("fx-week").value.trim() || "Fecha 5"}. Revisá y publicá.`, "ok");
+    }
     $("fx-csv").addEventListener("change", async (e) => {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file) return;
       try {
-        const text = (await file.text()).replace(/^\uFEFF/, "").trim();
-        const first = text.split(/\r?\n/, 1)[0] || "";
-        const sep = first.includes("\t") ? "\t" : first.includes(";") ? ";" : ",";
-        const lines = text.split(/\r?\n/).filter((l) => l.trim());
-        const split = (line) => {
-          const out = [];
-          let cur = "";
-          let q = false;
-          for (let i = 0; i < line.length; i++) {
-            const ch = line[i];
-            if (ch === '"') q = !q;
-            else if (ch === sep && !q) {
-              out.push(cur.trim());
-              cur = "";
-            } else cur += ch;
-          }
-          out.push(cur.trim());
-          return out;
-        };
-        const header = split(lines[0]).map((h) => h.toLowerCase());
-        const idx = (name) => header.indexOf(name);
-        const parsed = lines.slice(1).map((line) => {
-          const cols = split(line);
-          const get = (k) => (idx(k) >= 0 ? cols[idx(k)] : "");
-          return cleanMatch({
-            week: get("week") || get("semana"),
-            date: get("date") || get("fecha"),
-            temp: get("temp") || get("temporada"),
-            cat: get("cat") || get("categoria") || get("categoría"),
-            time: get("time") || get("hora"),
-            venue: get("venue") || get("sede"),
-            home: get("home") || get("local"),
-            away: get("away") || get("visitante"),
-            result: get("result") || get("resultado"),
-          });
-        }).filter((m) => m.home || m.away);
-        if (!parsed.length) throw new Error("El CSV no tiene partidos válidos.");
-        fixture = parsed;
-        renderFixture();
-        msg($("fx-msg"), `Importé ${parsed.length} partidos.`, "ok");
+        loadFixtureText(await file.text());
+      } catch (err) {
+        msg($("fx-msg"), err.message, "err");
+      }
+    });
+    $("fx-paste-btn").addEventListener("click", () => {
+      try {
+        loadFixtureText($("fx-paste").value);
       } catch (err) {
         msg($("fx-msg"), err.message, "err");
       }

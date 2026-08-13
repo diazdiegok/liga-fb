@@ -46,6 +46,7 @@ import Layout from "../layouts/Layout.astro";
     <div class="admin-tabs">
       <button class="pill on" type="button" data-tab="ranking">Ranking</button>
       <button class="pill" type="button" data-tab="fixture">Fixture</button>
+      <button class="pill" type="button" data-tab="fecha">Inscripción</button>
       <button class="pill" type="button" data-tab="sitio">Datos del sitio</button>
     </div>
 
@@ -138,6 +139,23 @@ import Layout from "../layouts/Layout.astro";
       </div>
     </section>
 
+    <section id="tab-fecha" hidden>
+      <div class="admin-panel">
+        <div class="admin-toolbar">
+          <label class="admin-week">Fecha
+            <input id="disp-week" placeholder="Fecha 6" />
+          </label>
+          <label class="chk"><input id="disp-open" type="checkbox" checked /> Inscripción abierta</label>
+          <button class="btn btn-ghost" type="button" id="disp-reload">Actualizar</button>
+          <button class="btn btn-lime" type="button" id="disp-publish">Guardar fecha</button>
+        </div>
+      </div>
+      <p class="admin-help">Las parejas se anotan en /inscripcion/. Acá ves lo cargado y podés abrir o cerrar la fecha.</p>
+      <p class="admin-msg" id="disp-msg"></p>
+      <p class="tag" id="disp-count"></p>
+      <div id="disp-list" class="disp-list"></div>
+    </section>
+
     <section id="tab-sitio" hidden>
       <form class="form" id="site-form" style="max-width:640px">
         <label>Temporada en juego
@@ -158,6 +176,11 @@ import Layout from "../layouts/Layout.astro";
         <label>Texto de la liga
           <textarea name="ligaIntro" rows="6"></textarea>
         </label>
+        <label>Token inscripción pública
+          <input name="submitToken" type="password" autocomplete="off" placeholder="Token Contents: write de este repo" />
+        </label>
+        <p class="admin-help">Con este token las parejas pueden anotarse solas. Puede ser el mismo de Publicar. Después de guardarlo, esperá ~1 minuto.</p>
+        <button class="btn btn-ghost" type="button" id="copy-submit-token">Usar el token de esta sesión</button>
         <button class="btn btn-lime" type="submit">Publicar datos del sitio</button>
       </form>
       <p class="admin-msg" id="site-msg"></p>
@@ -169,7 +192,9 @@ import Layout from "../layouts/Layout.astro";
     import fixtureJson from "../data/fixture.json";
     import siteJson from "../data/site.json";
     import auth from "../data/admin-auth.json";
+    import dispJson from "../data/disponibilidad.json";
     import { applyFixtureResults, describeResult } from "../lib/scoring.js";
+    import { pairLabel, loadDisponibilidad, saveDisponibilidad } from "../lib/disponibilidad.js";
 
     const HIDDEN_CATS = new Set(["S Masculina"]);
     const initialRows = rankingJson.filter((p) => !HIDDEN_CATS.has(p.cat));
@@ -182,6 +207,7 @@ import Layout from "../layouts/Layout.astro";
     const repo = initialSite.githubRepo;
     const RANK_PATH = "src/data/ranking.json";
     const SITE_PATH = "src/data/site.json";
+    let disp = structuredClone(dispJson);
     const FIXTURE_PATH = "src/data/fixture.json";
     const RANK_COLS = ["name", "cat", "pts", "pj", "dif", "pos", "temp"];
     const FX_COLS = ["categoria", "partido", "complejo", "cancha", "dia", "horario"];
@@ -367,6 +393,53 @@ import Layout from "../layouts/Layout.astro";
       form.city.value = siteData.city || "";
       form.province.value = siteData.province || "";
       form.ligaIntro.value = siteData.ligaIntro || "";
+      form.submitToken.value = siteData.submitToken || "";
+    }
+    function fillDisp() {
+      $("disp-week").value = disp.week || "Fecha 6";
+      $("disp-open").checked = disp.open !== false;
+      const list = disp.entries || [];
+      $("disp-count").textContent = list.length + (list.length === 1 ? " pareja" : " parejas");
+      const groups = [...new Set(list.map((e) => e.cat || "Sin categoría"))];
+      $("disp-list").innerHTML = groups.length
+        ? groups.map((cat) => {
+            const rows = list.filter((e) => (e.cat || "Sin categoría") === cat);
+            return `<section class="fixture-week">
+              <h3 class="kicker">${cat} · ${rows.length}</h3>
+              <div class="fixture-list">
+                ${rows.map((e) => {
+                  const when = e.bye
+                    ? "No juega esta semana"
+                    : Object.entries(e.days || {}).map(([d, h]) => `${d} ${h}`).join(" · ");
+                  return `<article class="fixture-row" data-disp="${e.id}">
+                    <div class="fixture-meta">
+                      <span>${e.recover ? "Recupera" : "Fecha"}</span>
+                      <span>${when || "Sin horario"}</span>
+                    </div>
+                    <strong>${pairLabel(e)}</strong>
+                    ${e.note ? `<p class="admin-help">${e.note}</p>` : ""}
+                    <button class="admin-del" type="button" data-disp-del="${e.id}" aria-label="Eliminar">×</button>
+                  </article>`;
+                }).join("")}
+              </div>
+            </section>`;
+          }).join("")
+        : `<p class="empty" style="display:block;padding:24px 0">Todavía no hay inscriptos en ${disp.week || "esta fecha"}.</p>`;
+    }
+    async function reloadDisp() {
+      if (!token) {
+        fillDisp();
+        return;
+      }
+      try {
+        const file = await loadDisponibilidad({ owner, repo, token });
+        disp = file.json;
+        fillDisp();
+        msg($("disp-msg"), "Inscripciones actualizadas.", "ok");
+      } catch (err) {
+        fillDisp();
+        msg($("disp-msg"), err.message, "err");
+      }
     }
 
     function csvCell(v) {
@@ -528,6 +601,8 @@ import Layout from "../layouts/Layout.astro";
       renderTable();
       renderFixture();
       fillSiteForm();
+      fillDisp();
+      reloadDisp();
     }
 
     function timingEqual(a, b) {
@@ -627,7 +702,9 @@ import Layout from "../layouts/Layout.astro";
         btn.classList.add("on");
         $("tab-ranking").hidden = btn.dataset.tab !== "ranking";
         $("tab-fixture").hidden = btn.dataset.tab !== "fixture";
+        $("tab-fecha").hidden = btn.dataset.tab !== "fecha";
         $("tab-sitio").hidden = btn.dataset.tab !== "sitio";
+        if (btn.dataset.tab === "fecha") reloadDisp();
       });
     });
 
@@ -931,6 +1008,54 @@ import Layout from "../layouts/Layout.astro";
       }
     });
 
+    $("copy-submit-token").addEventListener("click", () => {
+      const value = $("gh-token").value.trim() || token;
+      $("site-form").submitToken.value = value;
+      msg($("site-msg"), value ? "Copié el token de esta sesión. Publicá los datos del sitio." : "Primero pegá el token arriba en Publicar.", value ? "ok" : "err");
+    });
+    $("disp-reload").addEventListener("click", reloadDisp);
+    $("disp-list").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-disp-del]");
+      if (!btn) return;
+      disp.entries = (disp.entries || []).filter((row) => row.id !== btn.dataset.dispDel);
+      fillDisp();
+    });
+    $("disp-publish").addEventListener("click", async () => {
+      token = $("gh-token").value.trim();
+      if (!token) {
+        msg($("disp-msg"), "Para guardar pegá un token de GitHub arriba.", "err");
+        $("gh-token").focus();
+        return;
+      }
+      sessionStorage.setItem(KEY, token);
+      disp.week = $("disp-week").value.trim() || "Fecha 6";
+      disp.open = $("disp-open").checked;
+      disp.temp = siteData.currentSeason || "T4";
+      msg($("disp-msg"), "Guardando inscripción…");
+      try {
+        const file = await loadDisponibilidad({ owner, repo, token });
+        const latest = file.json;
+        const keepIds = new Set((disp.entries || []).map((e) => e.id));
+        latest.week = disp.week;
+        latest.open = disp.open;
+        latest.temp = disp.temp;
+        latest.entries = (latest.entries || []).filter((e) => keepIds.has(e.id));
+        await saveDisponibilidad({
+          owner,
+          repo,
+          token,
+          json: latest,
+          sha: file.sha,
+          message: latest.open ? `Abre inscripción ${latest.week}.` : `Cierra inscripción ${latest.week}.`,
+        });
+        disp = latest;
+        fillDisp();
+        msg($("disp-msg"), "Fecha guardada. El sitio se actualiza en ~1 minuto.", "ok");
+      } catch (err) {
+        msg($("disp-msg"), err.message, "err");
+      }
+    });
+
     $("site-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       token = $("gh-token").value.trim();
@@ -949,6 +1074,7 @@ import Layout from "../layouts/Layout.astro";
         city: form.city.value.trim(),
         province: form.province.value.trim(),
         ligaIntro: form.ligaIntro.value.trim(),
+        submitToken: form.submitToken.value.trim(),
       };
       msg($("site-msg"), "Publicando datos…");
       try {

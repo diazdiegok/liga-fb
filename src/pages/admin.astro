@@ -13,7 +13,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     <form class="admin-card form" id="login-form">
       <p class="kicker">Panel interno</p>
       <h1>Admin Liga FB</h1>
-      <div id="step-pass">
+      <div class="admin-step" id="step-pass">
         <p class="admin-help">Ingresá usuario y clave.</p>
         <label>Usuario
           <input id="user" autocomplete="off" />
@@ -25,7 +25,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
           <button class="btn btn-lime" type="submit" id="login-next">Continuar</button>
         </div>
       </div>
-      <div id="step-otp" hidden>
+      <div class="admin-step" id="step-otp" hidden>
         <p class="admin-help">Ahora el código de 6 dígitos del autenticador.</p>
         <label>Código
           <input id="otp" class="admin-otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />

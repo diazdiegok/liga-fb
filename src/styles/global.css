@@ -368,14 +368,14 @@ footer a:hover { color: var(--lime); }
 
 .form {
   display: grid;
-  gap: 14px;
+  gap: 22px;
   max-width: 560px;
 }
-.form label { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: grid; gap: 6px; }
+.form label { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: grid; gap: 10px; }
 .form input, .form select, .form textarea {
   background: var(--bg-2);
   border: 1px solid var(--line);
-  padding: 12px 14px;
+  padding: 14px 16px;
   outline: none;
 }
 .form input:focus, .form select:focus, .form textarea:focus { border-color: var(--lime); }
@@ -558,16 +558,17 @@ footer strong { color: var(--cream); }
   max-width: 520px;
   background: var(--bg-2);
   border: 1px solid var(--line);
-  padding: 28px;
+  padding: 36px 32px 40px;
   display: grid;
-  gap: 14px;
+  gap: 24px;
 }
-.admin-card h1 { font-size: 36px; }
+.admin-card h1 { font-size: 36px; margin: 0; }
+.admin-step { display: grid; gap: 22px; }
 .admin-btns {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: center;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 .admin-panel {
   display: grid;
@@ -611,7 +612,7 @@ footer strong { color: var(--cream); }
 .admin-msg.err { color: #ff8a8a; }
 .admin-tabs { display: flex; gap: 8px; margin: 12px 0 20px; }
 .btn-danger { background: transparent; border: 1px solid #ff8a8a; color: #ff8a8a; padding: 6px 10px; cursor: pointer; }
-.admin-help { color: var(--muted); font-size: 13px; max-width: 720px; line-height: 1.5; }
+.admin-help { color: var(--muted); font-size: 13px; max-width: 720px; line-height: 1.5; margin: 0; }
 .admin-help a { color: var(--lime); }
 .admin-scroll { overflow: auto; max-height: 62vh; border: 1px solid var(--line); }
 .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
@@ -634,16 +635,16 @@ footer strong { color: var(--cream); }
   text-transform: uppercase;
   color: var(--lime);
 }
-.splash-art { width: min(220px, 60vw); height: auto; }
-.splash-paddle { transform-origin: 39px 138px; animation: swing 0.7s ease-in-out infinite alternate; }
-.splash-ball { animation: bounce 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) infinite alternate; }
+.splash-art { width: min(280px, 72vw); height: auto; }
+.splash-paddle { transform-origin: 70px 213px; animation: swing 0.7s ease-in-out infinite alternate; }
+.splash-ball { transform-origin: 210px 128px; animation: bounce 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) infinite alternate; }
 @keyframes bounce {
   from { transform: translate(0, 0); }
-  to { transform: translate(-46px, -62px); }
+  to { transform: translate(-78px, -36px); }
 }
 @keyframes swing {
-  from { transform: rotate(-8deg); }
-  to { transform: rotate(16deg); }
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(10deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .splash { display: none; }

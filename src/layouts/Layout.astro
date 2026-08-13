@@ -33,12 +33,25 @@ const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
     {!noindex && (
       <div class="splash" id="splash" hidden>
         <div class="splash-scene" aria-hidden="true">
-          <svg class="splash-art" viewBox="0 0 220 160">
+          <svg class="splash-art" viewBox="0 0 280 230">
             <g class="splash-paddle">
-              <rect x="28" y="34" width="22" height="80" rx="9" fill="#f3f0e6" />
-              <rect x="34" y="108" width="10" height="30" rx="3" fill="#d6ff2f" />
+              <path fill="#d6ff2f" d="M70 8c-28 0-52 24-52 72 0 42 18 68 52 80 34-12 52-38 52-80 0-48-24-72-52-72z"/>
+              <path fill="#f3f0e6" d="M70 18c-22 0-42 20-42 62 0 36 15 58 42 68 27-10 42-32 42-68 0-42-20-62-42-62z"/>
+              <g fill="#070907">
+                <circle cx="54" cy="42" r="4.2"/><circle cx="70" cy="42" r="4.2"/><circle cx="86" cy="42" r="4.2"/>
+                <circle cx="46" cy="58" r="4.2"/><circle cx="62" cy="58" r="4.2"/><circle cx="78" cy="58" r="4.2"/><circle cx="94" cy="58" r="4.2"/>
+                <circle cx="46" cy="74" r="4.2"/><circle cx="62" cy="74" r="4.2"/><circle cx="78" cy="74" r="4.2"/><circle cx="94" cy="74" r="4.2"/>
+                <circle cx="54" cy="90" r="4.2"/><circle cx="70" cy="90" r="4.2"/><circle cx="86" cy="90" r="4.2"/>
+                <circle cx="62" cy="106" r="4.2"/><circle cx="78" cy="106" r="4.2"/>
+              </g>
+              <rect x="62" y="148" width="16" height="42" rx="4" fill="#b8b4a8"/>
+              <rect x="59" y="182" width="22" height="28" rx="5" fill="#d6ff2f"/>
+              <rect x="58" y="206" width="24" height="7" rx="2" fill="#f3f0e6"/>
             </g>
-            <circle class="splash-ball" cx="150" cy="120" r="12" fill="#d6ff2f" />
+            <g class="splash-ball">
+              <circle cx="210" cy="128" r="16" fill="#d6ff2f"/>
+              <path d="M198 122c8 2 16 8 20 18" stroke="#111" stroke-width="2" fill="none"/>
+            </g>
           </svg>
           <p>Liga FB</p>
         </div>
@@ -84,9 +97,9 @@ const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
         document.querySelector("nav")?.classList.toggle("open");
       });
       const splash = document.getElementById("splash");
-      if (splash && !sessionStorage.getItem("liga-fb-splash")) {
+      if (splash && !sessionStorage.getItem("liga-fb-splash-v2")) {
         splash.hidden = false;
-        sessionStorage.setItem("liga-fb-splash", "1");
+        sessionStorage.setItem("liga-fb-splash-v2", "1");
         setTimeout(() => {
           splash.classList.add("out");
           setTimeout(() => splash.remove(), 500);

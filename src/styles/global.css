@@ -564,12 +564,14 @@ footer strong { color: var(--cream); }
 }
 .admin-card h1 { font-size: 36px; margin: 0; }
 .admin-step { display: grid; gap: 22px; }
+.admin-step[hidden], .admin-app[hidden], .admin-gate[hidden] { display: none !important; }
 .admin-btns {
   display: flex;
-  gap: 16px;
-  align-items: center;
-  margin-top: 4px;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
 }
+.admin-btns .btn { justify-content: center; width: 100%; }
 .admin-panel {
   display: grid;
   gap: 12px;
@@ -626,6 +628,7 @@ footer strong { color: var(--cream); }
   place-items: center;
   transition: opacity 0.45s ease;
 }
+.splash[hidden] { display: none !important; }
 .splash.out { opacity: 0; pointer-events: none; }
 .splash-scene { text-align: center; }
 .splash-scene p {

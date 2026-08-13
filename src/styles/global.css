@@ -394,8 +394,18 @@ footer a:hover { color: var(--lime); }
   place-items: center;
   font-weight: 800;
   font-size: 18px;
+  letter-spacing: 0.02em;
   z-index: 40;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
+.admin-pub summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.admin-pub input { margin-top: 8px; min-width: 220px; }
 .tag {
   display: inline-block;
   border: 1px solid var(--line);

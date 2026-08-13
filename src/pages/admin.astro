@@ -13,17 +13,24 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     <form class="admin-card form" id="login-form">
       <p class="kicker">Panel interno</p>
       <h1>Admin Liga FB</h1>
-      <p class="admin-help">Usuario, clave y el código de 6 dígitos del autenticador.</p>
-      <label>Usuario
-        <input id="user" autocomplete="username" placeholder="Admin" />
-      </label>
-      <label>Clave
-        <input id="pass" type="password" autocomplete="current-password" />
-      </label>
-      <label>Código del autenticador
-        <input id="otp" class="admin-otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" />
-      </label>
-      <button class="btn btn-lime" type="submit" id="login">Entrar</button>
+      <div id="step-pass">
+        <p class="admin-help">Ingresá usuario y clave.</p>
+        <label>Usuario
+          <input id="user" autocomplete="username" />
+        </label>
+        <label>Clave
+          <input id="pass" type="password" autocomplete="current-password" />
+        </label>
+        <button class="btn btn-lime" type="submit" id="login-next">Continuar</button>
+      </div>
+      <div id="step-otp" hidden>
+        <p class="admin-help">Ahora el código de 6 dígitos del autenticador.</p>
+        <label>Código
+          <input id="otp" class="admin-otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+        </label>
+        <button class="btn btn-lime" type="submit" id="login">Entrar</button>
+        <button class="btn btn-ghost" type="button" id="login-back">Volver</button>
+      </div>
       <p class="admin-msg" id="login-msg"></p>
     </form>
   </div>
@@ -31,9 +38,11 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
   <div class="wrap admin-app" id="app" hidden>
     <p class="kicker">Panel interno</p>
     <h1>Cargar y editar</h1>
-    <p class="admin-help">Los cambios se publican en GitHub. En ~1 minuto GitHub Pages actualiza el sitio.</p>
     <div class="admin-toolbar">
-      <input id="gh-token" type="password" placeholder="Token GitHub para publicar" autocomplete="off" style="min-width:220px" />
+      <details class="admin-pub">
+        <summary>Publicar</summary>
+        <input id="gh-token" type="password" placeholder="Token de publicación" autocomplete="off" />
+      </details>
       <button class="btn btn-ghost" type="button" id="logout">Salir</button>
     </div>
 
@@ -389,15 +398,32 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       return false;
     }
 
+    let passReady = false;
+    $("login-back").addEventListener("click", () => {
+      passReady = false;
+      $("step-otp").hidden = true;
+      $("step-pass").hidden = false;
+      $("otp").value = "";
+      msg($("login-msg"), "");
+    });
     $("login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       msg($("login-msg"), "Validando…");
       try {
-        const userOk = ($("user").value || "").trim().toLowerCase() === String(auth.user).toLowerCase();
-        const hash = await sha256hex(PASS_SALT + ($("pass").value || ""));
-        const passOk = timingEqual(hash, auth.passwordHash);
+        if (!passReady) {
+          const userOk = ($("user").value || "").trim().toLowerCase() === String(auth.user).toLowerCase();
+          const hash = await sha256hex(PASS_SALT + ($("pass").value || ""));
+          const passOk = timingEqual(hash, auth.passwordHash);
+          if (!userOk || !passOk) throw new Error("Usuario o clave incorrectos.");
+          passReady = true;
+          $("step-pass").hidden = true;
+          $("step-otp").hidden = false;
+          $("otp").focus();
+          msg($("login-msg"), "");
+          return;
+        }
         const otpOk = await totpOk(auth.totpSecret, $("otp").value);
-        if (!userOk || !passOk || !otpOk) throw new Error("Usuario, clave o código incorrectos.");
+        if (!otpOk) throw new Error("Código del autenticador incorrecto.");
         sessionStorage.setItem(AUTH_KEY, "1");
         showApp();
       } catch (err) {

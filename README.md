@@ -19,7 +19,7 @@ Subí el contenido de `dist/` a `public_html`. Hacé backup de WordPress antes. 
 
 ## Admin
 
-Panel en `/admin/` (también en el pie del sitio). Entrá con un Personal Access Token de GitHub (Contents: Read and write en este repo). Desde ahí se edita el ranking, se importa CSV y se cambian temporada en juego, WhatsApp y textos. Publicar dispara el rebuild de GitHub Pages.
+Panel en `/admin/` (botón al lado de Sumate). Login: usuario `Admin`, la clave del cliente y el código de 6 dígitos del autenticador. Para publicar cambios en el sitio hace falta además un Personal Access Token de GitHub (Contents: Read and write).
 
 CSV sugerido: `name,cat,pts,pj,dif,pos,temp`
 

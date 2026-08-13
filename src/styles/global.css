@@ -96,6 +96,14 @@ nav .wrap {
   cursor: pointer;
 }
 .nav-cta:hover { filter: brightness(1.08); }
+.nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.nav-cta-ghost {
+  background: transparent;
+  color: var(--cream);
+  border: 1px solid var(--line);
+}
+.nav-cta-ghost:hover { border-color: var(--lime); color: var(--lime); filter: none; }
+.nav-mobile-only { display: none; }
 .menu-btn {
   display: none;
   background: none;
@@ -399,7 +407,8 @@ footer a:hover { color: var(--lime); }
 }
 
 @media (max-width: 860px) {
-  .nav-links, nav .nav-cta { display: none; }
+  .nav-links, nav .nav-actions { display: none; }
+  .nav-mobile-only { display: list-item; }
   .menu-btn { display: block; }
   nav.open .nav-links {
     display: flex;
@@ -474,6 +483,12 @@ footer strong { color: var(--cream); }
   .hero-media::before { background-position: 70% center; }
 }
 
+.admin-otp {
+  letter-spacing: 0.35em;
+  font-size: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
 .admin-gate, .admin-app { padding: 40px 0 80px; }
 .admin-card {
   max-width: 520px;

@@ -2,31 +2,29 @@
 import Layout from "../layouts/Layout.astro";
 import ranking from "../data/ranking.json";
 import { site } from "../data/site";
+import auth from "../data/admin-auth.json";
 
 const HIDDEN_CATS = new Set(["S Masculina"]);
 const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat));
 ---
 <Layout title="Admin | Liga FB" description="Panel para cargar ranking y datos de Liga FB." noindex>
   <div class="wrap admin-gate" id="gate">
-    <div class="admin-card">
+    <form class="admin-card form" id="login-form">
       <p class="kicker">Panel interno</p>
       <h1>Admin Liga FB</h1>
-      <p class="admin-help">
-        Entrá con un token de GitHub con permiso de escritura en
-        <a href={`https://github.com/${site.githubOwner}/${site.githubRepo}`} target="_blank" rel="noreferrer">{site.githubOwner}/{site.githubRepo}</a>.
-        El token queda en esta pestaña (sessionStorage), no se guarda en el sitio.
-      </p>
-      <label class="form">
-        Token
-        <input id="token" type="password" autocomplete="off" placeholder="ghp_… o github_pat_…" />
+      <p class="admin-help">Usuario, clave y el código de 6 dígitos de tu autenticador (Google Authenticator, Authy o el de Windows).</p>
+      <label>Usuario
+        <input id="user" autocomplete="username" placeholder="Admin" />
       </label>
-      <button class="btn btn-lime" type="button" id="login">Entrar</button>
+      <label>Clave
+        <input id="pass" type="password" autocomplete="current-password" />
+      </label>
+      <label>Código del autenticador
+        <input id="otp" class="admin-otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" />
+      </label>
+      <button class="btn btn-lime" type="submit" id="login">Entrar</button>
       <p class="admin-msg" id="login-msg"></p>
-      <p class="admin-help">
-        Creá el token en GitHub → Settings → Developer settings → Personal access tokens.
-        Fine-grained: Contents Read and write en este repo. Classic: scope <code>repo</code>.
-      </p>
-    </div>
+    </form>
   </div>
 
   <div class="wrap admin-app" id="app" hidden>
@@ -50,6 +48,7 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
           <input id="csv" type="file" accept=".csv,.txt,.tsv" hidden />
         </label>
         <label class="chk"><input id="replace-temp" type="checkbox" checked /> Reemplazar la temporada del CSV</label>
+        <input id="gh-token" type="password" placeholder="Token GitHub para publicar" autocomplete="off" style="min-width:220px" />
         <button class="btn btn-lime" type="button" id="publish">Publicar ranking</button>
         <button class="btn btn-ghost" type="button" id="logout">Salir</button>
       </div>
@@ -100,8 +99,10 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     </section>
   </div>
 
-  <script define:vars={{ initialRows: rows, initialSite: site }}>
+  <script define:vars={{ initialRows: rows, initialSite: site, auth }}>
     const KEY = "liga-fb-gh-token";
+    const AUTH_KEY = "liga-fb-admin-ok";
+    const PASS_SALT = "liga-fb-admin-v1";
     const owner = initialSite.githubOwner;
     const repo = initialSite.githubRepo;
     const RANK_PATH = "src/data/ranking.json";
@@ -250,35 +251,83 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     function showApp() {
       gate.hidden = true;
       app.hidden = false;
+      $("gh-token").value = token;
       fillFilters();
       renderTable();
       fillSiteForm();
     }
 
-    async function checkToken() {
-      const user = await api("/user");
-      await api(`/repos/${owner}/${repo}`);
-      return user.login;
+    function timingEqual(a, b) {
+      if (a.length !== b.length) return false;
+      let out = 0;
+      for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+      return out === 0;
     }
 
-    $("login").addEventListener("click", async () => {
-      token = $("token").value.trim();
+    async function sha256hex(str) {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+      return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function base32Decode(input) {
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+      const clean = String(input).toUpperCase().replace(/=+$/g, "").replace(/[^A-Z2-7]/g, "");
+      let bits = "";
+      for (const ch of clean) bits += alphabet.indexOf(ch).toString(2).padStart(5, "0");
+      const bytes = [];
+      for (let i = 0; i + 8 <= bits.length; i += 8) bytes.push(parseInt(bits.slice(i, i + 8), 2));
+      return new Uint8Array(bytes);
+    }
+
+    async function hotp(secretBytes, counter) {
+      const key = await crypto.subtle.importKey("raw", secretBytes, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+      const buf = new ArrayBuffer(8);
+      const view = new DataView(buf);
+      view.setUint32(0, Math.floor(counter / 0x100000000));
+      view.setUint32(4, counter >>> 0);
+      const sig = new Uint8Array(await crypto.subtle.sign("HMAC", key, buf));
+      const offset = sig[sig.length - 1] & 0xf;
+      const code =
+        ((sig[offset] & 0x7f) << 24) | (sig[offset + 1] << 16) | (sig[offset + 2] << 8) | sig[offset + 3];
+      return String(code % 1_000_000).padStart(6, "0");
+    }
+
+    async function totpOk(secret, code) {
+      const want = String(code || "").replace(/\s/g, "");
+      if (!/^\d{6}$/.test(want)) return false;
+      const secretBytes = base32Decode(secret);
+      const now = Math.floor(Date.now() / 1000 / 30);
+      for (const delta of [-1, 0, 1]) {
+        if (timingEqual(await hotp(secretBytes, now + delta), want)) return true;
+      }
+      return false;
+    }
+
+    $("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
       msg($("login-msg"), "Validando…");
       try {
-        const login = await checkToken();
-        sessionStorage.setItem(KEY, token);
-        msg($("login-msg"), "Hola " + login, "ok");
+        const userOk = ($("user").value || "").trim().toLowerCase() === String(auth.user).toLowerCase();
+        const hash = await sha256hex(PASS_SALT + ($("pass").value || ""));
+        const passOk = timingEqual(hash, auth.passwordHash);
+        const otpOk = await totpOk(auth.totpSecret, $("otp").value);
+        if (!userOk || !passOk || !otpOk) throw new Error("Usuario, clave o código incorrectos.");
+        sessionStorage.setItem(AUTH_KEY, "1");
         showApp();
-      } catch (e) {
-        token = "";
-        sessionStorage.removeItem(KEY);
-        msg($("login-msg"), e.message, "err");
+      } catch (err) {
+        sessionStorage.removeItem(AUTH_KEY);
+        msg($("login-msg"), err.message, "err");
       }
     });
 
+    $("gh-token").addEventListener("change", () => {
+      token = $("gh-token").value.trim();
+      if (token) sessionStorage.setItem(KEY, token);
+      else sessionStorage.removeItem(KEY);
+    });
+
     $("logout").addEventListener("click", () => {
-      sessionStorage.removeItem(KEY);
-      token = "";
+      sessionStorage.removeItem(AUTH_KEY);
       location.reload();
     });
 
@@ -409,6 +458,13 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
     });
 
     $("publish").addEventListener("click", async () => {
+      token = $("gh-token").value.trim();
+      if (!token) {
+        msg($("rank-msg"), "Para publicar en el sitio pegá un token de GitHub (Contents: write).", "err");
+        $("gh-token").focus();
+        return;
+      }
+      sessionStorage.setItem(KEY, token);
       rows = rows.map(cleanRow).filter((r) => r.name && r.cat.toLowerCase() !== "s masculina");
       msg($("rank-msg"), "Publicando ranking…");
       try {
@@ -427,6 +483,13 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
 
     $("site-form").addEventListener("submit", async (e) => {
       e.preventDefault();
+      token = $("gh-token").value.trim();
+      if (!token) {
+        msg($("site-msg"), "Para publicar pegá un token de GitHub arriba (Contents: write).", "err");
+        $("gh-token").focus();
+        return;
+      }
+      sessionStorage.setItem(KEY, token);
       const form = e.target;
       siteData = {
         ...siteData,
@@ -450,13 +513,6 @@ const rows = ranking.filter((p) => !HIDDEN_CATS.has((p as { cat: string }).cat))
       }
     });
 
-    if (token) {
-      checkToken()
-        .then(showApp)
-        .catch(() => {
-          sessionStorage.removeItem(KEY);
-          token = "";
-        });
-    }
+    if (sessionStorage.getItem(AUTH_KEY) === "1") showApp();
   </script>
 </Layout>

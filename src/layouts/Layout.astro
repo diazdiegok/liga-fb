@@ -41,8 +41,12 @@ const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
           <li><a href={page("ranking/")} aria-current={path.includes("/ranking") ? "page" : undefined}>Ranking</a></li>
           <li><a href={page("academia/")} aria-current={path.includes("/academia") ? "page" : undefined}>Academia</a></li>
           <li><a href={page("sedes/")} aria-current={path.includes("/sedes") ? "page" : undefined}>Sedes</a></li>
+          <li class="nav-mobile-only"><a href={page("admin/")} aria-current={path.includes("/admin") ? "page" : undefined}>Admin</a></li>
         </ul>
-        <a class="nav-cta" href={page("inscripcion/")}>Sumate</a>
+        <div class="nav-actions">
+          <a class="nav-cta nav-cta-ghost" href={page("admin/")} aria-current={path.includes("/admin") ? "page" : undefined}>Admin</a>
+          <a class="nav-cta" href={page("inscripcion/")}>Sumate</a>
+        </div>
         <button class="menu-btn" type="button" data-menu>Menu</button>
       </div>
     </nav>
@@ -57,8 +61,6 @@ const logo = asset("images/Logo-FB-blanco-sin-fondo-02.png");
           <a href={site.instagram} target="_blank" rel="noreferrer">Instagram</a>
           ·
           <a href={page("inscripcion/")}>WhatsApp</a>
-          ·
-          <a href={page("admin/")}>Admin</a>
         </div>
       </div>
     </footer>

@@ -18,7 +18,9 @@
       "city": "Paraná, Entre Ríos",
       "type": "Cancha abierta · Liga nocturna y clases",
       "image": "/images/DJI_0239-scaled.jpg",
-      "maps": "https://www.google.com/maps/search/?api=1&query=Santos+Dominguez+100+Parana"
+      "maps": "https://www.google.com/maps/search/?api=1&query=Santos+Dominguez+100+Parana",
+      "instagram": "https://www.instagram.com/palermo_padel/",
+      "whatsapp": "5493435075537"
     },
     {
       "id": "open",
@@ -27,7 +29,9 @@
       "city": "E3100 Paraná, Entre Ríos",
       "type": "Cancha abierta · Liga y academia",
       "image": "/images/Talleres-cancha.jpg",
-      "maps": "https://www.google.com/maps/search/?api=1&query=Augusto+Bravard+276+Parana"
+      "maps": "https://www.google.com/maps/search/?api=1&query=Augusto+Bravard+276+Parana",
+      "instagram": "https://www.instagram.com/openpadelfb/",
+      "whatsapp": "5493434638322"
     },
     {
       "id": "americas",
@@ -36,7 +40,9 @@
       "city": "Paraná, Entre Ríos",
       "type": "Cancha abierta · Liga y academia",
       "image": "/images/americas-padel.jpg",
-      "maps": "https://www.google.com/maps/place/Americas+Padel+Club/data=!4m2!3m1!1s0x0:0x848a22092083eac9"
+      "maps": "https://www.google.com/maps/place/Americas+Padel+Club/data=!4m2!3m1!1s0x0:0x848a22092083eac9",
+      "instagram": "https://www.instagram.com/americaspadel/",
+      "whatsapp": "5493434630623"
     },
     {
       "id": "terrazas",
@@ -45,7 +51,9 @@
       "city": "Paraná, Entre Ríos",
       "type": "Cancha abierta · Liga",
       "image": "/images/terrazas-padel.jpg",
-      "maps": "https://www.google.com/maps/place/Terrazas+Padel/data=!4m2!3m1!1s0x0:0x52969520820609e2"
+      "maps": "https://www.google.com/maps/place/Terrazas+Padel/data=!4m2!3m1!1s0x0:0x52969520820609e2",
+      "instagram": "https://www.instagram.com/terrazaspadelclub/",
+      "whatsapp": "5493435056072"
     },
     {
       "id": "bengurion",
@@ -54,7 +62,9 @@
       "city": "Paraná, Entre Ríos",
       "type": "Cancha abierta · Liga",
       "image": "/images/bengurion-padel.jpg",
-      "maps": "https://www.google.com/maps/place/Camping+David+Ben+Gurion/@-31.784139,-60.5199135,17z/data=!3m1!4b1!4m6!3m5!1s0x95b44c48b85fabb5:0x55085892176b3757!8m2!3d-31.7841436!4d-60.5173386"
+      "maps": "https://www.google.com/maps/place/Camping+David+Ben+Gurion/@-31.784139,-60.5199135,17z/data=!3m1!4b1!4m6!3m5!1s0x95b44c48b85fabb5:0x55085892176b3757!8m2!3d-31.7841436!4d-60.5173386",
+      "instagram": "https://www.instagram.com/bengurionpadelclub/",
+      "whatsapp": "5493434767996"
     }
   ],
   "moreVenues": [

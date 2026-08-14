@@ -135,7 +135,11 @@ const totalPlayers = rows.length;
             <div class="venue-body">
               <h3>{v.name}</h3>
               <p>{v.address}</p>
-              <a href={v.maps} target="_blank" rel="noreferrer">Cómo llegar</a>
+              <div class="venue-links">
+                <a href={v.maps} target="_blank" rel="noreferrer">Maps</a>
+                {v.instagram && <a href={v.instagram} target="_blank" rel="noreferrer">Instagram</a>}
+                {v.whatsapp && <a href={`https://wa.me/${v.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a>}
+              </div>
             </div>
           </article>
         ))}

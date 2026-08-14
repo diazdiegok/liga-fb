@@ -26,7 +26,11 @@ import { asset } from "../lib/paths";
             <p>{v.address}</p>
             <p>{v.city}</p>
             <p>{v.type}</p>
-            <a href={v.maps} target="_blank" rel="noreferrer">Abrir en Maps</a>
+            <div class="venue-links">
+              <a href={v.maps} target="_blank" rel="noreferrer">Maps</a>
+              {v.instagram && <a href={v.instagram} target="_blank" rel="noreferrer">Instagram</a>}
+              {v.whatsapp && <a href={`https://wa.me/${v.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a>}
+            </div>
           </div>
         </article>
       </section>

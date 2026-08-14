@@ -64,12 +64,6 @@
     { "name": "Recreativo", "image": "/images/recre-cancha.jpg" },
     { "name": "Paraná Soccer", "image": "/images/pna-soccer-c.jpg" }
   ],
-  "team": [
-    { "name": "Fabián Boninni", "image": "/images/FABI-VERDE.png", "role": "Academia" },
-    { "name": "Staff", "image": "/images/team-prof.png", "role": "Profes" },
-    { "name": "Mateo", "image": "/images/mateo.png", "role": "Profe" },
-    { "name": "Tomás Leones", "image": "/images/tomas-leones.png", "role": "Profe" }
-  ],
   "sponsors": [
     "/images/MM-LOGO.png",
     "/images/Logo-redondo-FB-blanco.png",

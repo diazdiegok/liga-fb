@@ -1,15 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { site } from "../data/site";
 import { asset, page } from "../lib/paths";
 ---
 <Layout
   title="Academia FB | Clases de pádel en Paraná"
-  description="Academia de pádel profesional y de niños de Fabián Boninni. Clases de lunes a viernes en Paraná."
+  description="Academia de pádel profesional y de niños de Fabián Borini. Clases de lunes a viernes en Paraná."
 >
   <div class="wrap">
     <header class="page-hero">
-      <p class="kicker">Academia de Fabián Boninni</p>
+      <p class="kicker">Academia de Fabián Borini</p>
       <h1>Entrená<br />como se juega</h1>
       <p>Clases de adultos y niños, lunes a viernes, de 10 a 17. Técnica, partido y competencia. La liga es el examen; la academia, el entrenamiento.</p>
       <div class="actions">
@@ -21,11 +20,11 @@ import { asset, page } from "../lib/paths";
 
   <section>
     <div class="wrap sede-grid" style="gap:32px;align-items:center">
-      <img class="portrait" src={asset("images/FABI-VERDE.png")} alt="Fabián Boninni" />
+      <img class="portrait" src={asset("images/fabian-borini.jpg")} alt="Fabián Borini" />
       <div>
-        <p class="kicker">Director</p>
-        <h2>Fabián Boninni</h2>
-        <p class="lead">Academia de pádel profesional y de niños. Mismo staff, misma exigencia que la liga nocturna.</p>
+        <p class="kicker">Dueño</p>
+        <h2>Fabián Borini</h2>
+        <p class="lead">Academia de pádel profesional y de niños. La misma exigencia que la liga nocturna.</p>
       </div>
     </div>
   </section>
@@ -54,25 +53,6 @@ import { asset, page } from "../lib/paths";
           <h3>Complemento</h3>
           <p>Nutricionista y gym para rendir en la liga.</p>
         </article>
-      </div>
-    </div>
-  </section>
-
-  <section style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head">
-        <div>
-          <p class="kicker">Staff</p>
-          <h2>El equipo</h2>
-        </div>
-      </div>
-      <div class="team">
-        {site.team.map((p) => (
-          <figure>
-            <img src={asset(p.image)} alt={p.name} />
-            <figcaption>{p.name} · {p.role}</figcaption>
-          </figure>
-        ))}
       </div>
     </div>
   </section>

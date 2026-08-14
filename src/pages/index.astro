@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import { site } from "../data/site";
 import ranking from "../data/ranking.json";
 import { asset, page } from "../lib/paths";
+import VenueLinks from "../components/VenueLinks.astro";
 
 const HIDDEN_CATS = new Set(["S Masculina"]);
 const rows = ranking.filter((p) => !HIDDEN_CATS.has(p.cat));
@@ -135,11 +136,7 @@ const totalPlayers = rows.length;
             <div class="venue-body">
               <h3>{v.name}</h3>
               <p>{v.address}</p>
-              <div class="venue-links">
-                <a href={v.maps} target="_blank" rel="noreferrer">Maps</a>
-                {v.instagram && <a href={v.instagram} target="_blank" rel="noreferrer">Instagram</a>}
-                {v.whatsapp && <a href={`https://wa.me/${v.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a>}
-              </div>
+              <VenueLinks maps={v.maps} instagram={v.instagram} whatsapp={v.whatsapp} />
             </div>
           </article>
         ))}

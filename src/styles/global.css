@@ -276,16 +276,30 @@ section { padding: 80px 0; }
 .venue-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 16px;
+  align-items: center;
+  gap: 12px 14px;
   margin-top: auto;
   padding-top: 12px;
 }
-.venue-links a {
+.venue-go {
   color: var(--lime);
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.venue-ico {
+  color: var(--lime);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+}
+.venue-ico svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+.venue-ico:hover, .venue-go:hover { color: var(--cream); }
 
 .split {
   display: grid;

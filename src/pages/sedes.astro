@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { site } from "../data/site";
 import { asset } from "../lib/paths";
+import VenueLinks from "../components/VenueLinks.astro";
 ---
 <Layout
   title="Sedes | Liga FB Paraná"
@@ -26,11 +27,7 @@ import { asset } from "../lib/paths";
             <p>{v.address}</p>
             <p>{v.city}</p>
             <p>{v.type}</p>
-            <div class="venue-links">
-              <a href={v.maps} target="_blank" rel="noreferrer">Maps</a>
-              {v.instagram && <a href={v.instagram} target="_blank" rel="noreferrer">Instagram</a>}
-              {v.whatsapp && <a href={`https://wa.me/${v.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a>}
-            </div>
+            <VenueLinks maps={v.maps} instagram={v.instagram} whatsapp={v.whatsapp} />
           </div>
         </article>
       </section>

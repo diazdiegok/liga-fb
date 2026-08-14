@@ -5,7 +5,7 @@ import { asset } from "../lib/paths";
 ---
 <Layout
   title="Sedes | Liga FB Paraná"
-  description="Canchas oficiales de Liga FB en Paraná: Palermo Pádel, Open y Américas."
+  description="Canchas oficiales de Liga FB en Paraná: Palermo Padel, Open Padel, Americas Padel, Terrazas Padel y Bengurion Padel."
 >
   <div class="wrap">
     <header class="page-hero">
@@ -26,7 +26,7 @@ import { asset } from "../lib/paths";
             <p>{v.address}</p>
             <p>{v.city}</p>
             <p>{v.type}</p>
-            <a href={`https://www.google.com/maps/search/?api=1&query=${v.maps}`} target="_blank" rel="noreferrer">Abrir en Maps</a>
+            <a href={v.maps} target="_blank" rel="noreferrer">Abrir en Maps</a>
           </div>
         </article>
       </section>

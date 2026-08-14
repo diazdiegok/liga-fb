@@ -13,30 +13,48 @@
   "venues": [
     {
       "id": "palermo",
-      "name": "Palermo Pádel",
+      "name": "Palermo Padel",
       "address": "Santos Domínguez 100",
       "city": "Paraná, Entre Ríos",
       "type": "Cancha abierta · Liga nocturna y clases",
       "image": "/images/DJI_0239-scaled.jpg",
-      "maps": "Santos+Dominguez+100+Parana"
+      "maps": "https://www.google.com/maps/search/?api=1&query=Santos+Dominguez+100+Parana"
     },
     {
       "id": "open",
-      "name": "Open",
+      "name": "Open Padel",
       "address": "Augusto Bravard 276",
       "city": "E3100 Paraná, Entre Ríos",
       "type": "Cancha abierta · Liga y academia",
       "image": "/images/Talleres-cancha.jpg",
-      "maps": "Augusto+Bravard+276+Parana"
+      "maps": "https://www.google.com/maps/search/?api=1&query=Augusto+Bravard+276+Parana"
     },
     {
       "id": "americas",
-      "name": "Américas",
-      "address": "Av. de las Américas 290",
+      "name": "Americas Padel",
+      "address": "Av. de las Américas 2904",
       "city": "Paraná, Entre Ríos",
       "type": "Cancha abierta · Liga y academia",
-      "image": "/images/WhatsApp-Image-2026-04-18-at-19.35.51.jpeg",
-      "maps": "Avenida+de+las+Americas+290+Parana"
+      "image": "/images/americas-padel.jpg",
+      "maps": "https://www.google.com/maps/place/Americas+Padel+Club/data=!4m2!3m1!1s0x0:0x848a22092083eac9"
+    },
+    {
+      "id": "terrazas",
+      "name": "Terrazas Padel",
+      "address": "División Los Andes y Salvador Maciá",
+      "city": "Paraná, Entre Ríos",
+      "type": "Cancha abierta · Liga",
+      "image": "/images/terrazas-padel.jpg",
+      "maps": "https://www.google.com/maps/place/Terrazas+Padel/data=!4m2!3m1!1s0x0:0x52969520820609e2"
+    },
+    {
+      "id": "bengurion",
+      "name": "Bengurion Padel",
+      "address": "Camping David Ben Gurion",
+      "city": "Paraná, Entre Ríos",
+      "type": "Cancha abierta · Liga",
+      "image": "/images/bengurion-padel.jpg",
+      "maps": "https://www.google.com/maps/place/Camping+David+Ben+Gurion/@-31.784139,-60.5199135,17z/data=!3m1!4b1!4m6!3m5!1s0x95b44c48b85fabb5:0x55085892176b3757!8m2!3d-31.7841436!4d-60.5173386"
     }
   ],
   "moreVenues": [

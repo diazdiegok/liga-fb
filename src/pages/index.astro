@@ -76,7 +76,7 @@ const totalPlayers = rows.length;
         <article class="step">
           <div class="n">02</div>
           <h3>Jugás de noche</h3>
-          <p>En Palermo, Open o Américas — y también en Ciclista, Farola y otros complejos de la ciudad.</p>
+          <p>En Palermo Padel, Open Padel, Americas Padel, Terrazas Padel o Bengurion Padel — y también en Ciclista, Farola y otros complejos de la ciudad.</p>
         </article>
         <article class="step">
           <div class="n">03</div>
@@ -135,7 +135,7 @@ const totalPlayers = rows.length;
             <div class="venue-body">
               <h3>{v.name}</h3>
               <p>{v.address}</p>
-              <a href={`https://www.google.com/maps/search/?api=1&query=${v.maps}`} target="_blank" rel="noreferrer">Cómo llegar</a>
+              <a href={v.maps} target="_blank" rel="noreferrer">Cómo llegar</a>
             </div>
           </article>
         ))}

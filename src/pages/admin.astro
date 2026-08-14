@@ -221,8 +221,11 @@ import Layout from "../layouts/Layout.astro";
       "C FEM": "C Femenino", "C FEMENINO": "C Femenino",
     };
     const VENUE_MAP = {
-      OPEN: "Open", AMERICAS: "Américas", "AMÉRICAS": "Américas",
-      PALERMO: "Palermo Pádel", TERRAZAS: "Terrazas",
+      OPEN: "Open Padel", "OPEN PADEL": "Open Padel",
+      AMERICAS: "Americas Padel", "AMÉRICAS": "Americas Padel", "AMERICAS PADEL": "Americas Padel",
+      PALERMO: "Palermo Padel", "PALERMO PÁDEL": "Palermo Padel", "PALERMO PADEL": "Palermo Padel",
+      TERRAZAS: "Terrazas Padel", "TERRAZAS PADEL": "Terrazas Padel",
+      BENGURION: "Bengurion Padel", "BEN GURION": "Bengurion Padel",
     };
 
     let rows = structuredClone(initialRows);
@@ -882,7 +885,7 @@ import Layout from "../layouts/Layout.astro";
         temp: siteData.currentSeason || "T4",
         cat: "A Masculina",
         time: "19:00 - 20:30",
-        venue: "Open",
+        venue: "Open Padel",
         court: "Cancha 1",
         home: "",
         away: "",
